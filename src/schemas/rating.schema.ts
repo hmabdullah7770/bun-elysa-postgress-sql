@@ -1,0 +1,48 @@
+// import mongoose, {Schema} from "mongoose";
+// import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+
+// const ratingSchema = new Schema(
+//     {
+//         rating: {
+//             type: Number,
+//             min: 1,
+//             max: 5,
+//             required: true
+//         },
+//         postId: {
+//             type: mongoose.Schema.Types.ObjectId,
+//             required: true
+//         },
+//         // contentType: {
+//         //     type: String,
+//         //     enum: ["card", "video"],
+//         //     required: true
+//         // },
+//         owner: {
+//             type: mongoose.Schema.Types.ObjectId,
+//             ref: "User",
+//             required: true
+//         },
+//         comment: {
+//             type: String,
+//             trim: true
+//         }
+//     },
+//     {
+//         timestamps: true
+//     }
+// );
+
+
+
+// ratingSchema.plugin(mongooseAggregatePaginate);
+
+// // Add indexes for frequent queries
+// // ratingSchema.index({ contentId: 1, contentType: 1 });
+// ratingSchema.index({ postId: 1, owner: 1 }, { unique: true });
+// ratingSchema.index({ owner: 1 });
+// // ✅ Create compound index for fast lookups
+// ratingSchema.index({ postId: 1, userId: 1 })
+// ratingSchema.index({ rating: -1 });
+
+// export const Rating = mongoose.model("Rating", ratingSchema); 
