@@ -1,10 +1,10 @@
-// src/repositories/user.repository.ts
+﻿// src/repositories/user.repository.ts
 import { eq, or, and, ne, sql, count } from "drizzle-orm";
 import { db } from "../db/index";
 import { users, type NewUser, type User } from "../schemas/user.schema";
 import { followLists } from "../schemas/followlist.schema";
 import { watchHistory } from "../schemas/watchHistory.schema";
-// import { userStores } from "../schemas/userStore.schema";
+// import { userStores } from "../schemas/store/createStore.schema"";
 import { createStore } from "../schemas/store/createStore.schema";
 
 // Columns to exclude from responses
@@ -28,7 +28,7 @@ import { createStore } from "../schemas/store/createStore.schema";
 
 
 const safeUserColumns = {
-  id: users.id,
+  _id: users._id,
   username: users.username,
   email: users.email,
   fullName: users.fullName,
@@ -46,13 +46,13 @@ const safeUserColumns = {
 };
 
 export class UserRepository {
-  // ─── Find Methods ──────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Find Methods Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async findById(id: string): Promise<User | undefined> {
     const result = await db
       .select()
       .from(users)
-      .where(eq(users.id, id))
+      .where(eq(users._id, id))
       .limit(1);
     return result[0];
   }
@@ -61,7 +61,7 @@ export class UserRepository {
     const result = await db
       .select(safeUserColumns)
       .from(users)
-      .where(eq(users.id, id))
+      .where(eq(users._id, id))
       .limit(1);
     return result[0];
   }
@@ -101,7 +101,7 @@ export class UserRepository {
     return result[0];
   }
 
-  // ─── Social Link Duplicate Check ──────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Social Link Duplicate Check Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async findBySocialLinks(
     socialLinks: {
@@ -130,7 +130,7 @@ export class UserRepository {
       .from(users)
       .where(
         excludeUserId
-          ? and(or(...conditions), ne(users.id, excludeUserId))
+          ? and(or(...conditions), ne(users._id, excludeUserId))
           : or(...conditions)
       )
       .limit(1);
@@ -139,7 +139,7 @@ export class UserRepository {
     return result[0];
   }
 
-  // ─── Create ───────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Create Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async create(data: NewUser): Promise<User> {
     const result = await db.insert(users).values(data).returning();
@@ -147,13 +147,13 @@ export class UserRepository {
     return result[0];
   }
 
-  // ─── Update Methods ──────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Update Methods Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async updateById(id: string, data: Partial<NewUser>) {
     const result = await db
       .update(users)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(users.id, id))
+      .where(eq(users._id, id))
       .returning(safeUserColumns);
     return result[0];
   }
@@ -165,7 +165,7 @@ export class UserRepository {
     const result = await db
       .update(users)
       .set({ refreshToken, updatedAt: new Date() })
-      .where(eq(users.id, id))
+      .where(eq(users._id, id))
       .returning();
     return result[0];
   }
@@ -183,7 +183,7 @@ export class UserRepository {
     const result = await db
       .update(users)
       .set({ avatar: avatarUrl, updatedAt: new Date() })
-      .where(eq(users.id, id))
+      .where(eq(users._id, id))
       .returning();
     return result[0];
   }
@@ -192,12 +192,12 @@ export class UserRepository {
     const result = await db
       .update(users)
       .set({ coverImage: coverImageUrl, updatedAt: new Date() })
-      .where(eq(users.id, id))
+      .where(eq(users._id, id))
       .returning();
     return result[0];
   }
 
-  // ─── User With Follower/Following Counts ──────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ User With Follower/Following Counts Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async findByIdWithFollowCounts(userId: string) {
     const result = await db
@@ -205,21 +205,21 @@ export class UserRepository {
         ...safeUserColumns,
         followerCount: sql<number>`(
           SELECT COUNT(*) FROM follow_lists 
-          WHERE follow_lists.following_id = ${users.id}
+          WHERE follow_lists.following_id = ${users._id}
         )`.as("follower_count"),
         followingCount: sql<number>`(
           SELECT COUNT(*) FROM follow_lists 
-          WHERE follow_lists.follower_id = ${users.id}
+          WHERE follow_lists.follower_id = ${users._id}
         )`.as("following_count"),
       })
       .from(users)
-      .where(eq(users.id, userId))
+      .where(eq(users._id, userId))
       .limit(1);
 
     return result[0];
   }
 
-  // ─── User Profile With Follow Button State ────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ User Profile With Follow Button State Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async findProfileByUsername(
     username: string,
@@ -227,7 +227,7 @@ export class UserRepository {
   ) {
     const result = await db
       .select({
-        id: users.id,
+        _id: users._id,
         fullName: users.fullName,
         username: users.username,
         email: users.email,
@@ -238,17 +238,17 @@ export class UserRepository {
         updatedAt: users.updatedAt,
         followerCount: sql<number>`(
           SELECT COUNT(*) FROM follow_lists 
-          WHERE follow_lists.following_id = ${users.id}
+          WHERE follow_lists.following_id = ${users._id}
         )`.as("follower_count"),
         followingCount: sql<number>`(
           SELECT COUNT(*) FROM follow_lists 
-          WHERE follow_lists.follower_id = ${users.id}
+          WHERE follow_lists.follower_id = ${users._id}
         )`.as("following_count"),
         followbutton: sql<boolean>`(
           SELECT EXISTS(
             SELECT 1 FROM follow_lists 
             WHERE follow_lists.follower_id = ${currentUserId} 
-            AND follow_lists.following_id = ${users.id}
+            AND follow_lists.following_id = ${users._id}
           )
         )`.as("is_following"),
       })
@@ -259,7 +259,7 @@ export class UserRepository {
     return result[0];
   }
 
-  // ─── User Stores ─────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ User createStore Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async getUserStores(userId: string) {
     return db
@@ -268,7 +268,7 @@ export class UserRepository {
       .where(eq(createStore.ownerId, userId));
   }
 
-  // ─── Watch History ────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Watch History Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async getWatchHistory(userId: string) {
     return db
@@ -278,10 +278,10 @@ export class UserRepository {
       .orderBy(sql`${watchHistory.createdAt} DESC`);
   }
 
-  // ─── Delete ───────────────────────────────────────────────────
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Delete Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
 
   async deleteById(id: string) {
-    return db.delete(users).where(eq(users.id, id));
+    return db.delete(users).where(eq(users._id, id));
   }
 }
 

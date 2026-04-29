@@ -1,4 +1,4 @@
-// src/repositories/followlist.repository.ts
+﻿// src/repositories/followlist.repository.ts
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../db/index";
 import { followLists } from "../schemas/followlist.schema";

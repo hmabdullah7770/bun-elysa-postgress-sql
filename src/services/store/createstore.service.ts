@@ -1,4 +1,4 @@
-// src/services/store/createstore.service.ts
+﻿// src/services/store/createstore.service.ts
 import { createstoreRepository, storeRatingRepository } from "../../repository/store/createstore.repository";
 import { uploadResult, saveTempFile } from "../../utils/cloudinary";
 import { ApiError } from "../../utils/ApiError";
@@ -25,7 +25,7 @@ export interface RateStoreInput {
 
 export class CreateStoreService {
 
-  // ─── Create Store ─────────────────────────────────────────────
+  // â”€â”€â”€ Create Store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async createStore(input: CreateStoreInput) {
     const { storeName, category, storeLogo, ownerId } = input;
@@ -51,7 +51,7 @@ export class CreateStoreService {
       throw new ApiError(409, "Store name already taken, choose another");
     }
 
-    // ✅ Save file to disk first, then upload (same as auth service)
+    // âœ… Save file to disk first, then upload (same as auth service)
     const logoPath = await saveTempFile(storeLogo);
 
     const uploadedLogo = await uploadResult(logoPath);
@@ -71,7 +71,7 @@ export class CreateStoreService {
     return store;
   }
 
-  // ─── Get Store By ID ──────────────────────────────────────────
+  // â”€â”€â”€ Get Store By ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getStoreById(storeId: string) {
     if (!storeId) {
@@ -86,14 +86,14 @@ export class CreateStoreService {
     return store;
   }
 
-  // ─── Get All Stores For a User ────────────────────────────────
-  // ✅ Service — accept string directly
+  // â”€â”€â”€ Get All Stores For a User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // âœ… Service â€” accept string directly
 async getUserStores(ownerId: string) {
   if (!ownerId) throw new ApiError(400, "User ID is required");
   return await createstoreRepository.findAllByOwner(ownerId);
 }
 
-  // ─── Update Store ─────────────────────────────────────────────
+  // â”€â”€â”€ Update Store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async updateStore(storeId: string, ownerId: string, input: UpdateStoreInput) {
     if (!storeId) {
@@ -125,7 +125,7 @@ async getUserStores(ownerId: string) {
     if (input.storeName) updateData.storeName = input.storeName;
     if (input.category !== undefined) updateData.category = input.category;
 
-    // ✅ Save file to disk first, then upload (same as auth service)
+    // âœ… Save file to disk first, then upload (same as auth service)
     if (input.storeLogo) {
       const logoPath = await saveTempFile(input.storeLogo);
 
@@ -141,7 +141,7 @@ async getUserStores(ownerId: string) {
     return updatedStore;
   }
 
-  // ─── Delete Store ─────────────────────────────────────────────
+  // â”€â”€â”€ Delete Store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async deleteStore(storeId: string, ownerId: string) {
     if (!storeId) {
@@ -163,7 +163,7 @@ async getUserStores(ownerId: string) {
     return true;
   }
 
-  // ─── Increment Click Count ────────────────────────────────────
+  // â”€â”€â”€ Increment Click Count â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async incrementClickCount(storeId: string) {
     if (!storeId) {
@@ -179,7 +179,7 @@ async getUserStores(ownerId: string) {
     return true;
   }
 
-  // ─── Rate a Store ─────────────────────────────────────────────
+  // â”€â”€â”€ Rate a Store â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async rateStore(input: RateStoreInput) {
     const { storeId, userId, rating } = input;
@@ -218,7 +218,7 @@ async getUserStores(ownerId: string) {
     return storeRating;
   }
 
-  // ─── Get Top Rated Stores ─────────────────────────────────────
+  // â”€â”€â”€ Get Top Rated Stores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getTopRatedStores(page: number = 1, limit: number = 10, category?: string) {
     if (page < 1) throw new ApiError(400, "Page must be greater than 0");
@@ -227,7 +227,7 @@ async getUserStores(ownerId: string) {
     return await createstoreRepository.getTopRated({ page, limit, category });
   }
 
-  // ─── Get User Rated Stores ────────────────────────────────────
+  // â”€â”€â”€ Get User Rated Stores â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getUserRatedStores(userId: string, page: number = 1, limit: number = 10) {
     if (!userId) {

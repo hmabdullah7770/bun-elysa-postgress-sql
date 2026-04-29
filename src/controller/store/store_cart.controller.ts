@@ -1,4 +1,4 @@
-// src/controllers/store_cart.controller.ts
+﻿// src/controllers/store_cart.controller.ts
 import { storeCartService } from "../../services/store/store_cart.service";
 import { ApiError } from "../../utils/ApiError";
 import { ApiResponse } from "../../utils/ApiResponse";
@@ -7,7 +7,7 @@ import { isUUID } from "../../Validators/isUUID";
 
 export class StoreCartController {
 
-  // ─── ADD TO CART ───
+  // â”€â”€â”€ ADD TO CART â”€â”€â”€
   async addToStoreCart(body: any) {
     const { userId, storeId, productId, color, size } = body;
     const quantity = parseInt(body.quantity, 10);
@@ -39,7 +39,7 @@ export class StoreCartController {
     return new ApiResponse(200, cart, "Product added to cart");
   }
 
-  // ─── GET CART ───
+  // â”€â”€â”€ GET CART â”€â”€â”€
   async getStoreCart(userId: string, storeId: string) {
     if (!isUUID(userId) || !isUUID(storeId)) {
       throw new ApiError(400, "Invalid ID format");
@@ -57,7 +57,7 @@ export class StoreCartController {
     return new ApiResponse(200, cartData, message);
   }
 
-  // ─── REMOVE FROM CART ───
+  // â”€â”€â”€ REMOVE FROM CART â”€â”€â”€
   async removeFromStoreCart(body: any) {
     const { userId, storeId, productId, color, size } = body;
 
@@ -80,7 +80,7 @@ export class StoreCartController {
     return new ApiResponse(200, cart, "Product removed from cart");
   }
 
-  // ─── CLEAR CART ───
+  // â”€â”€â”€ CLEAR CART â”€â”€â”€
   async clearStoreCart(body: any) {
     const { userId, storeId } = body;
 

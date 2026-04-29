@@ -1,4 +1,4 @@
-// src/db/schema/store_carousel_old.schema.ts
+﻿// src/db/schema/store_carousel_old.schema.ts
 import {
   pgTable, uuid, varchar, text, boolean,
   integer, timestamp, index
@@ -7,11 +7,11 @@ import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
 
 export const store_carousel_old = pgTable("store_carousel_old", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   storeId: uuid("store_id")
     .notNull()
     .unique()
-    .references(() => createStore.id, { onDelete: "cascade" }),
+    .references(() => createStore._id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
     .$onUpdate(() => new Date()),
@@ -20,10 +20,10 @@ export const store_carousel_old = pgTable("store_carousel_old", {
 }));
 
 export const carousel_items_old = pgTable("carousel_items_old", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   storeCarouselId: uuid("store_carousel_id")
     .notNull()
-    .references(() => store_carousel_old.id, { onDelete: "cascade" }),
+    .references(() => store_carousel_old._id, { onDelete: "cascade" }),
   index: integer("index").notNull(),
   images: text("images").notNull(),
   imageAlt: varchar("image_alt", { length: 255 }).default("Banner Background"),
@@ -58,7 +58,7 @@ export const storeCarouselOldRelations = relations(
   store_carousel_old, ({ one, many }) => ({
   store: one(createStore, {
     fields: [store_carousel_old.storeId],
-    references: [createStore.id],
+    references: [createStore._id],
   }),
   carousels: many(carousel_items_old),
 }));
@@ -67,7 +67,7 @@ export const carouselItemsOldRelations = relations(
   carousel_items_old, ({ one }) => ({
   storeCarousel: one(store_carousel_old, {
     fields: [carousel_items_old.storeCarouselId],
-    references: [store_carousel_old.id],
+    references: [store_carousel_old._id],
   }),
 }));
 

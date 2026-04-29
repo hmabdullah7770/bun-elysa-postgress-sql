@@ -1,4 +1,4 @@
-// src/repository/store/store_carousel_old.repository.ts
+﻿// src/repository/store/store_carousel_old.repository.ts
 import { db } from "../../db/index";
 import {
   store_carousel_old,
@@ -41,7 +41,7 @@ class StoreCarouselOldRepository {
   // const store = await db
   //   .select()
   //   .from(createStore)
-  //   .where(eq(createStore.id, storeId))
+  //   .where(eq(createStore._id, storeId))
   //   .limit(1);
 
   // if (!store[0]) throw new ApiError(404, "Store not found");
@@ -85,7 +85,7 @@ class StoreCarouselOldRepository {
     const item = await db
       .select()
       .from(carousel_items_old)
-      .where(eq(carousel_items_old.id, carouselId))
+      .where(eq(carousel_items_old._id, carouselId))
       .limit(1);
 
     return item[0] || null;
@@ -98,7 +98,7 @@ class StoreCarouselOldRepository {
     const updated = await db
       .update(carousel_items_old)
       .set({ ...fields, updatedAt: new Date() })
-      .where(eq(carousel_items_old.id, carouselId))
+      .where(eq(carousel_items_old._id, carouselId))
       .returning();
 
     return updated[0];
@@ -107,7 +107,7 @@ class StoreCarouselOldRepository {
   async deleteCarouselItem(carouselId: string) {
     return await db
       .delete(carousel_items_old)
-      .where(eq(carousel_items_old.id, carouselId));
+      .where(eq(carousel_items_old._id, carouselId));
   }
 }
 

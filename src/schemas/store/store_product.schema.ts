@@ -1,4 +1,4 @@
-// src/schemas/store/store_product.schema.ts
+﻿// src/schemas/store/store_product.schema.ts
 import {
   pgTable, uuid, varchar, text, numeric,
   integer, boolean, timestamp, index,
@@ -7,18 +7,18 @@ import {
 import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
 
-// ✅ ProductColor type
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ ProductColor type
 export type ProductColor = {
   color: string;
   index: number;
 };
 
-// ✅ Product table
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Product table
 export const store_product = pgTable("store_product", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   storeId: uuid("store_id")
     .notNull()
-    .references(() => createStore.id, { onDelete: "cascade" }),
+    .references(() => createStore._id, { onDelete: "cascade" }),
 
   // Basic info
   productName: varchar("product_name", { length: 255 }).notNull(),
@@ -58,12 +58,12 @@ export const store_product = pgTable("store_product", {
   updatedAt: timestamp("updated_at").defaultNow().notNull()
     .$onUpdate(() => new Date()),
 }, (table) => ({
-  // ✅ Composite unique index (storeId + productName)
+  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Composite unique index (storeId + productName)
   storeProductNameIdx: uniqueIndex("store_product_name_idx")
     .on(table.storeId, table.productName),
-  // ✅ Index for store lookup
+  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Index for store lookup
   storeIdx: index("store_product_store_idx").on(table.storeId),
-  // ✅ Index for category filter
+  // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Index for category filter
   categoryIdx: index("store_product_category_idx").on(table.category),
 }));
 
@@ -71,7 +71,7 @@ export const storeProductRelations = relations(
   store_product, ({ one }) => ({
   store: one(createStore, {
     fields: [store_product.storeId],
-    references: [createStore.id],
+    references: [createStore._id],
   }),
 }));
 

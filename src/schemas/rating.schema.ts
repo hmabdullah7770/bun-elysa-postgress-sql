@@ -1,4 +1,4 @@
-// import mongoose, {Schema} from "mongoose";
+﻿// import mongoose, {Schema} from "mongoose";
 // import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 // const ratingSchema = new Schema(
@@ -41,7 +41,7 @@
 // // ratingSchema.index({ contentId: 1, contentType: 1 });
 // ratingSchema.index({ postId: 1, owner: 1 }, { unique: true });
 // ratingSchema.index({ owner: 1 });
-// // ✅ Create compound index for fast lookups
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Create compound index for fast lookups
 // ratingSchema.index({ postId: 1, userId: 1 })
 // ratingSchema.index({ rating: -1 });
 

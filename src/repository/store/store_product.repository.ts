@@ -1,4 +1,4 @@
-// src/repository/store/store_product.repository.ts
+﻿// src/repository/store/store_product.repository.ts
 import { db } from "../../db";
 import {
   store_product,
@@ -11,18 +11,18 @@ import { eq, and, desc, asc, ilike, sql } from "drizzle-orm";
 
 class StoreProductRepository {
 
-  // ✅ Find product by ID
+  // Ã¢Å“â€¦ Find product by ID
   async findById(productId: string) {
     const [product] = await db
       .select()
       .from(store_product)
-      .where(eq(store_product.id, productId))
+      .where(eq(store_product._id, productId))
       .limit(1);
     return product || null;
   }
 
 
-  // ✅ Increment ordersalltime counter
+  // Ã¢Å“â€¦ Increment ordersalltime counter
 async incrementOrdersAllTime(productId: string): Promise<void> {
   await db
     .update(store_product)
@@ -30,11 +30,11 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
       ordersAllTime: sql`${store_product.ordersAllTime} + 1`,
       updatedAt: new Date(),
     })
-    .where(eq(store_product.id, productId));
+    .where(eq(store_product._id, productId));
 }
 
 
-  // ✅ Find product by name in store
+  // Ã¢Å“â€¦ Find product by name in store
   async findByName(storeId: string, productName: string) {
     const [product] = await db
       .select()
@@ -49,7 +49,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
     return product || null;
   }
 
-  // ✅ Get all products for store
+  // Ã¢Å“â€¦ Get all products for store
   async findByStoreId(
     storeId: string,
     options: {
@@ -69,10 +69,10 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
     const offset = (page - 1) * limit;
     const [sortField, sortOrder] = sort.split(":");
 
-    // ✅ Build query
+    // Ã¢Å“â€¦ Build query
     let query = db
       .select({
-        _id: store_product.id,
+        _id: store_product._id,
         storeId: store_product.storeId,
         productName: store_product.productName,
         productPrice: store_product.productPrice,
@@ -100,7 +100,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
     return await query;
   }
 
-  // ✅ Create product
+  // Ã¢Å“â€¦ Create product
   async create(data: NewStoreProduct) {
     const [product] = await db
       .insert(store_product)
@@ -109,7 +109,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
     return product;
   }
 
-  // ✅ Update product
+  // Ã¢Å“â€¦ Update product
   async update(
     productId: string,
     data: Partial<NewStoreProduct>
@@ -117,21 +117,21 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
     const [updated] = await db
       .update(store_product)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(store_product.id, productId))
+      .where(eq(store_product._id, productId))
       .returning();
     return updated || null;
   }
 
-  // ✅ Delete product
+  // Ã¢Å“â€¦ Delete product
   async delete(productId: string) {
     const [deleted] = await db
       .delete(store_product)
-      .where(eq(store_product.id, productId))
+      .where(eq(store_product._id, productId))
       .returning();
     return deleted || null;
   }
 
-  // ✅ Remove specific image from product
+  // Ã¢Å“â€¦ Remove specific image from product
   async removeImage(productId: string, imageUrl: string) {
     // Get current images
     const product = await this.findById(productId);
@@ -150,7 +150,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
         productImages: updatedImages,
         updatedAt: new Date()
       })
-      .where(eq(store_product.id, productId))
+      .where(eq(store_product._id, productId))
       .returning();
 
     return updated;

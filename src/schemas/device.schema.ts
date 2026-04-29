@@ -1,4 +1,4 @@
-// import mongoose, { Schema } from "mongoose";
+﻿// import mongoose, { Schema } from "mongoose";
 
 // const deviceSchema = new Schema(
 //   {
@@ -165,7 +165,7 @@
 //     }
 
 //     await device.save();
-//     console.log("✅ Existing device found and updated");
+//     console.log("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Existing device found and updated");
 //     return { device, isNew: false };
 //   }
 
@@ -175,7 +175,7 @@
 //     ...deviceInfo,
 //   });
 
-//   console.log("✅ New device registered");
+//   console.log("ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ New device registered");
 //   return { device, isNew: true };
 // };
 

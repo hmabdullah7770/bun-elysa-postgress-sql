@@ -1,10 +1,10 @@
-// src/services/user.service.ts
+﻿// src/services/user.service.ts
 import { ApiError } from "../utils/ApiError";
 import { userRepository } from "../repository/user.repository";
 import { uploadResult, saveTempFile } from "../utils/cloudinary";
 
 export class UserService {
-  // ─── Get Current User (with follow counts) ────────────────────
+  // â”€â”€â”€ Get Current User (with follow counts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getCurrentUser(userId: string) {
     const user = await userRepository.findByIdWithFollowCounts(userId);
@@ -16,7 +16,7 @@ export class UserService {
     return { ...user, stores };
   }
 
-  // ─── Get User By ID ──────────────────────────────────────────
+  // â”€â”€â”€ Get User By ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getUserById(id: string) {
     const user = await userRepository.findByIdSafe(id);
@@ -24,7 +24,7 @@ export class UserService {
     return user;
   }
 
-  // ─── Get User Without Following Info ──────────────────────────
+  // â”€â”€â”€ Get User Without Following Info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getUserWithoutFollowing(userId: string) {
     const user = await userRepository.findByIdSafe(userId);
@@ -32,7 +32,7 @@ export class UserService {
     return user;
   }
 
-  // ─── Get User Profile (Follow List / Channel Profile) ────────
+  // â”€â”€â”€ Get User Profile (Follow List / Channel Profile) â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getUserProfile(username: string, currentUserId: string) {
     if (!username?.trim()) {
@@ -54,12 +54,12 @@ export class UserService {
     }
 
     // Get stores
-    const stores = await userRepository.getUserStores(profile.id);
+    const stores = await userRepository.getUserStores(profile._id);
 
     return { ...profile, stores };
   }
 
-  // ─── Update User ─────────────────────────────────────────────
+  // â”€â”€â”€ Update User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async updateUser(
     userId: string,
@@ -159,7 +159,7 @@ export class UserService {
     return updatedUser;
   }
 
-  // ─── Change Avatar ────────────────────────────────────────────
+  // â”€â”€â”€ Change Avatar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async changeAvatar(userId: string, avatarFile: File) {
     if (!avatarFile) throw new ApiError(400, "Avatar file is required");
@@ -177,7 +177,7 @@ export class UserService {
     return user;
   }
 
-  // ─── Change Cover Image ──────────────────────────────────────
+  // â”€â”€â”€ Change Cover Image â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async changeCoverImage(userId: string, coverImageFile: File) {
     if (!coverImageFile) {
@@ -197,7 +197,7 @@ export class UserService {
     return user;
   }
 
-  // ─── Get Watch History ────────────────────────────────────────
+  // â”€â”€â”€ Get Watch History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async getWatchHistory(userId: string) {
     const history = await userRepository.getWatchHistory(userId);

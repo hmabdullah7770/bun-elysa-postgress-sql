@@ -1,4 +1,4 @@
-// src/controllers/auth.controller.ts
+﻿// src/controllers/auth.controller.ts
 import { authService } from "../services/auth.service";
 import { ApiResponse } from "../utils/ApiResponse";
 
@@ -220,7 +220,7 @@ export const reSendOtp = async ({
 // };
 
 
-// ✅ Fixed
+// âœ… Fixed
 export const changePassword = async ({ body, userVerified }: any) => {
   await authService.changePassword(
     userVerified._id,

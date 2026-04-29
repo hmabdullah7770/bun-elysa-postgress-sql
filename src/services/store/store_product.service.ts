@@ -1,4 +1,4 @@
-// src/services/store/store_product.service.ts
+﻿// src/services/store/store_product.service.ts
 import { storeProductRepository } from "../../repository/store/store_product.repository";
 import { ApiError } from "../../utils/ApiError";
 import { saveTempFile, uploadResult } from "../../utils/cloudinary";
@@ -8,7 +8,7 @@ import { safeParseJSON } from "../../Validators/safeParseJSON";
 
 class StoreProductService {
 
-  // ✅ Calculate final price
+  // âœ… Calculate final price
   private calculateFinalPrice(
     price: number,
     discount: number = 0
@@ -16,7 +16,7 @@ class StoreProductService {
     return Number((price - price * (discount / 100)).toFixed(2));
   }
 
-  // ✅ Add product
+  // âœ… Add product
   
 async addProduct(
   storeId: string,
@@ -28,13 +28,13 @@ async addProduct(
   if (!body.productName || !body.productPrice)
     throw new ApiError(400, "Product name and price are required");
 
-  // ✅ Check duplicate name
+  // âœ… Check duplicate name
   const nameExists = await storeProductRepository
     .findByName(storeId, body.productName);
   if (nameExists)
     throw new ApiError(409, "Product name already taken, choose another");
 
-  // ✅ Get ordered files
+  // âœ… Get ordered files
   const orderedFiles = Object.keys(filesByIndex)
     .sort((a, b) => Number(a) - Number(b))
     .map(key => filesByIndex[Number(key)]);
@@ -42,7 +42,7 @@ async addProduct(
   if (orderedFiles.length === 0)
     throw new ApiError(400, "At least one product image is required");
 
-  // ✅ Upload images in order
+  // âœ… Upload images in order
   const uploadedImages = await Promise.all(
     orderedFiles.map(async (file) => {
       const path = await saveTempFile(file);
@@ -53,12 +53,12 @@ async addProduct(
     })
   );
 
-  // ✅ Parse productColors
+  // âœ… Parse productColors
   let parsedColors: ProductColor[] = [];
   if (body.productColors) {
     parsedColors = safeParseJSON<ProductColor[]>(
       body.productColors,
-      "productColors"   // ← field name for better error message
+      "productColors"   // â† field name for better error message
     );
 
     if (!Array.isArray(parsedColors)) {
@@ -73,7 +73,7 @@ async addProduct(
     }
   }
 
-  // ✅ Parse all arrays safely with field names
+  // âœ… Parse all arrays safely with field names
   const productSizes = body.productSizes
     ? safeParseJSON<string[]>(body.productSizes, "productSizes")
     : [];
@@ -94,7 +94,7 @@ async addProduct(
   const productDiscount = Number(body.productDiscount || 0);
   const finalPrice = this.calculateFinalPrice(productPrice, productDiscount);
 
-  // ✅ Create product
+  // âœ… Create product
   const product = await storeProductRepository.create({
     storeId,
     productName: body.productName,
@@ -116,7 +116,7 @@ async addProduct(
   return product;
 }
 
-  // ✅ Get store products
+  // âœ… Get store products
   async getStoreProducts(
     storeId: string,
     query: {
@@ -136,7 +136,7 @@ async addProduct(
     });
   }
 
-  // ✅ Get product by ID
+  // âœ… Get product by ID
   async getProductById(productId: string) {
     if (!productId) throw new ApiError(400, "Product ID is required");
 
@@ -146,7 +146,7 @@ async addProduct(
     return product;
   }
 
-  // ✅ Update product
+  // âœ… Update product
   async updateProduct(
     productId: string,
     storeId: string,
@@ -158,7 +158,7 @@ async addProduct(
     const product = await storeProductRepository.findById(productId);
     if (!product) throw new ApiError(404, "Product not found");
 
-    // ✅ Check name conflict
+    // âœ… Check name conflict
     if (body.productName && body.productName !== product.productName) {
       const nameExists = await storeProductRepository
         .findByName(storeId, body.productName);
@@ -187,7 +187,7 @@ async addProduct(
         ? JSON.parse(body.tags) : body.tags;
     }
 
-    // ✅ Recalculate final price
+    // âœ… Recalculate final price
     const productPrice = Number(body.productPrice || product.productPrice);
     const productDiscount = Number(body.productDiscount || product.productDiscount);
 
@@ -199,7 +199,7 @@ async addProduct(
       );
     }
 
-    // ✅ Handle new images
+    // âœ… Handle new images
     if (files && Object.keys(files).length > 0) {
       const orderedFiles = Object.keys(files)
         .sort((a, b) => Number(a) - Number(b))
@@ -215,7 +215,7 @@ async addProduct(
         })
       );
 
-      // ✅ Append new images to existing
+      // âœ… Append new images to existing
       updateData.productImages = [
         ...(product.productImages as string[]),
         ...newImages
@@ -225,7 +225,7 @@ async addProduct(
     return await storeProductRepository.update(productId, updateData);
   }
 
-  // ✅ Delete product
+  // âœ… Delete product
   async deleteProduct(productId: string, storeId: string) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
 
@@ -235,7 +235,7 @@ async addProduct(
     return await storeProductRepository.delete(productId);
   }
 
-  // ✅ Remove product image
+  // âœ… Remove product image
   async removeProductImage(
     productId: string,
     storeId: string,

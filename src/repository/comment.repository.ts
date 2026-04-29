@@ -1,6 +1,6 @@
-import { and, desc, eq, ilike, inArray, lt, gt, sql, or } from "drizzle-orm";
+﻿import { and, desc, eq, ilike, inArray, lt, gt, sql, or } from "drizzle-orm";
 import { db } from "../db";
-import { comments, users } from "../schemas";
+import { comments, users, posts } from "../schemas";
 
 type CommentRow = {
   _id: number;
@@ -36,6 +36,19 @@ export class CommentRepository {
     return id;
   }
 
+
+
+  
+  async findPostById(postId: string) {
+  const rows = await db
+    .select({ _id: posts._id })
+    .from(posts)
+    .where(eq(posts._id, Number(postId)))  // convert inside
+    .limit(1);
+  return rows[0];
+}
+
+
   async create(values: {
     _id: number;
     inCommentId: bigint;
@@ -66,14 +79,14 @@ export class CommentRepository {
       .select({
         comment: comments,
         owner: {
-          _id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(comments)
-      .leftJoin(users, eq(comments.owner, users.id))
+      .leftJoin(users, eq(comments.owner, users._id))
       .where(eq(comments._id, id))
       .limit(1);
     return rows[0] as any;
@@ -108,14 +121,14 @@ export class CommentRepository {
       .select({
         comment: comments,
         owner: {
-          _id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(comments)
-      .leftJoin(users, eq(comments.owner, users.id))
+      .leftJoin(users, eq(comments.owner, users._id))
       .where(and(eq(comments.postId, postId), eq(comments.pinned, true), eq(comments.isReply, false)))
       .orderBy(desc(comments.createdAt))
       .limit(1);
@@ -148,14 +161,14 @@ export class CommentRepository {
       .select({
         comment: comments,
         owner: {
-          _id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(comments)
-      .leftJoin(users, eq(comments.owner, users.id))
+      .leftJoin(users, eq(comments.owner, users._id))
       .where(and(...(whereParts as any)))
       .orderBy(orderBy as any)
       .limit(params.limit);
@@ -214,14 +227,14 @@ export class CommentRepository {
       .select({
         comment: comments,
         owner: {
-          _id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(comments)
-      .leftJoin(users, eq(comments.owner, users.id))
+      .leftJoin(users, eq(comments.owner, users._id))
       .where(and(...(whereParts as any)))
       .orderBy(orderBy as any)
       .limit(params.limit);
@@ -276,14 +289,14 @@ export class CommentRepository {
       .select({
         comment: comments,
         owner: {
-          _id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(comments)
-      .leftJoin(users, eq(comments.owner, users.id))
+      .leftJoin(users, eq(comments.owner, users._id))
       .where(and(...(searchWhere as any)))
       .orderBy(orderBy as any)
       .limit(params.limit);

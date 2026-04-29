@@ -1,4 +1,4 @@
-// src/services/auth.service.ts
+﻿// src/services/auth.service.ts
 import { ApiError } from "../utils/ApiError";
 import { userRepository } from "../repository/user.repository"
 import { otpRepository } from "../repository/otp.repository";
@@ -11,7 +11,7 @@ import { uploadResult, saveTempFile} from "../utils/cloudinary";
 import type { User } from "../schemas/user.schema";
 
 export class AuthService {
-  // ─── Token Generation ─────────────────────────────────────────
+  // â”€â”€â”€ Token Generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async generateTokens(userId: string) {
     const user = await userRepository.findById(userId);
@@ -25,7 +25,7 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  // ─── Verify Email (Send OTP) ──────────────────────────────────
+  // â”€â”€â”€ Verify Email (Send OTP) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async verifyEmail(email: string) {
     if (!email) throw new ApiError(400, "Email is required for verification");
@@ -59,7 +59,7 @@ export class AuthService {
     return { otp }; // Remove OTP from response in production
   }
 
-  // ─── Check Username Availability ──────────────────────────────
+  // â”€â”€â”€ Check Username Availability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async checkUsername(username: string) {
     if (!username) throw new ApiError(400, "Username is required");
@@ -72,7 +72,7 @@ export class AuthService {
     return { available: true, username };
   }
 
-  // ─── Register User ───────────────────────────────────────────
+  // â”€â”€â”€ Register User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async register(data: {
   username: string;
@@ -153,11 +153,11 @@ export class AuthService {
 
   const isExpired = otpRecord.expiresAt < new Date();
   if (isExpired) {
-    await otpRepository.deleteById(otpRecord.id);
+    await otpRepository.deleteById(otpRecord._id);
     throw new ApiError(400, "OTP has expired");
   }
 
-  // ✅ Save ALL files to disk first, then upload
+  // âœ… Save ALL files to disk first, then upload
   if (!avatarFile) throw new ApiError(400, "Avatar is required");
 
   const avatarPath = await saveTempFile(avatarFile);
@@ -200,14 +200,14 @@ export class AuthService {
   });
 
   // Return user without sensitive fields
-  const safeUser = await userRepository.findByIdSafe(newUser.id);
+  const safeUser = await userRepository.findByIdSafe(newUser._id);
   if (!safeUser) {
     throw new ApiError(500, "Something went wrong while registering");
   }
 
   return safeUser;
 }
-  // ─── Login ────────────────────────────────────────────────────
+  // â”€â”€â”€ Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async login(emailOrUsername: string, password: string) {
     if (!emailOrUsername || !password) {
@@ -225,9 +225,9 @@ export class AuthService {
       throw new ApiError(401, "Password is incorrect");
     }
 
-    const { accessToken, refreshToken } = await this.generateTokens(user.id);
+    const { accessToken, refreshToken } = await this.generateTokens(user._id);
 
-    const loggedInUser = await userRepository.findByIdSafe(user.id);
+    const loggedInUser = await userRepository.findByIdSafe(user._id);
     if (!loggedInUser) {
       throw new ApiError(500, "Something went wrong while logging in");
     }
@@ -235,13 +235,13 @@ export class AuthService {
     return { user: loggedInUser, accessToken, refreshToken };
   }
 
-  // ─── Logout ───────────────────────────────────────────────────
+  // â”€â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async logout(userId: string) {
     await userRepository.updateRefreshToken(userId, null);
   }
 
-  // ─── Refresh Token ────────────────────────────────────────────
+  // â”€â”€â”€ Refresh Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async refreshTokens(incomingRefreshToken: string) {
     if (!incomingRefreshToken) {
@@ -273,12 +273,12 @@ export class AuthService {
       throw new ApiError(413, "Refresh token does not match");
     }
 
-    const { accessToken, refreshToken } = await this.generateTokens(user.id);
+    const { accessToken, refreshToken } = await this.generateTokens(user._id);
 
     return { accessToken, refreshToken };
   }
 
-  // ─── Forget Password ─────────────────────────────────────────
+  // â”€â”€â”€ Forget Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async forgetPassword(email: string) {
     if (!email) throw new ApiError(400, "Email is required");
@@ -306,7 +306,7 @@ export class AuthService {
     return { otp }; // Remove in production
   }
 
-  // ─── Match OTP ────────────────────────────────────────────────
+  // â”€â”€â”€ Match OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async matchOtp(email: string, otp: string) {
     if (!email || !otp) {
@@ -325,7 +325,7 @@ export class AuthService {
     return { matched: true };
   }
 
-  // ─── Reset Password ──────────────────────────────────────────
+  // â”€â”€â”€ Reset Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async resetPassword(email: string, otp: string, newPassword: string) {
     if (!email || !otp || !newPassword) {
@@ -343,7 +343,7 @@ export class AuthService {
 
     const isExpired = otpRecord.expiresAt < new Date();
     if (isExpired) {
-      await otpRepository.deleteById(otpRecord.id);
+      await otpRepository.deleteById(otpRecord._id);
       throw new ApiError(400, "OTP has expired");
     }
 
@@ -363,7 +363,7 @@ export class AuthService {
     return { success: true };
   }
 
-  // ─── Change Password (Authenticated) ─────────────────────────
+  // â”€â”€â”€ Change Password (Authenticated) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async changePassword(
     userId: string,

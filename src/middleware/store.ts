@@ -5,7 +5,7 @@ import { createstoreRepository } from "../repository/store/createstore.repositor
 import { isUUID } from "../Validators/isUUID";
 
 export const verifyStoreOwner = new Elysia({ name: "verify-store-owner" })
-  .derive(async ({ params, userVerified }: { params: Record<string, string>; userVerified?: { _id?: string; id?: string } }) => {
+  .derive(async ({ params, userVerified }: { params: Record<string, string>; userVerified?: { _id?: string;  } }) => {
 
     console.log("In VerifyStoreOwner Middleware");
     console.log("Params:", params);

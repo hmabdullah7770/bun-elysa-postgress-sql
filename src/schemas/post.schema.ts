@@ -1,4 +1,4 @@
-import {
+﻿import {
   pgTable,
   uuid,
   varchar,
@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   jsonb,
   numeric,
+  bigint,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { users } from "./user.schema";
@@ -46,24 +47,24 @@ export type PostVideoItem = {
 export const posts = pgTable(
   "posts",
   {
-    // Frontend expects Mongo-style `_id`
-    _id: uuid("_id").defaultRandom().primaryKey(),
+    // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Changed from uuid to bigint
+    _id: bigint("_id", { mode: "number" })
+      .primaryKey()
+      .generatedAlwaysAsIdentity(),
 
-    // Unique ids used by your frontend/backfill scripts
     postIdUnique: varchar("post_id_unique", { length: 255 }).notNull(),
     inCategoryId: varchar("in_category_id", { length: 255 }).notNull(),
 
-    // Store as a normal string; you already normalize empty -> "All" in service
     category: varchar("category", { length: 255 }).notNull(),
 
     title: text("title").default(sql`null`),
     description: text("description").default(sql`null`),
 
-    owner: uuid("owner").notNull().references(() => users.id, {
+    // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ owner stays uuid ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â references users.id (uuid)
+    owner: uuid("owner").notNull().references(() => users._id, {
       onDelete: "cascade",
     }),
 
-    // Arrays-of-objects from your old schema
     store: jsonb("store").$type<PostStoreItem[]>().notNull().default([]),
     product: jsonb("product").$type<PostProductItem[]>().notNull().default([]),
 
@@ -73,32 +74,27 @@ export const posts = pgTable(
     audioFile: text("audio_file").default(sql`null`),
     song: text("song").array().notNull().default([]),
 
-    // Counts
     videocount: integer("videocount").notNull().default(0),
     imagecount: integer("imagecount").notNull().default(0),
     audiocount: integer("audiocount").notNull().default(0),
 
-    // Layout / type
     pattern: varchar("pattern", { length: 50 }).notNull().default("1"),
     postType: varchar("post_type", { length: 50 }).default(sql`null`),
 
     views: integer("views").notNull().default(0),
     isPublished: boolean("is_published").notNull().default(true),
 
-    // Social fields
     whatsapp: text("whatsapp").default(sql`null`),
     storeLink: text("store_link").default(sql`null`),
     facebook: text("facebook").default(sql`null`),
     instagram: text("instagram").default(sql`null`),
     productlink: text("productlink").default(sql`null`),
 
-    // URL fields
     facebookurl: text("facebookurl").default(sql`null`),
     instagramurl: text("instagramurl").default(sql`null`),
     whatsappnumberurl: text("whatsappnumberurl").default(sql`null`),
     storelinkurl: text("storelinkurl").default(sql`null`),
 
-    // Rating fields
     totalRating: integer("total_rating").notNull().default(0),
     ratingCount: integer("rating_count").notNull().default(0),
     averageRating: numeric("average_rating", { precision: 5, scale: 2 })
@@ -120,8 +116,6 @@ export const posts = pgTable(
       table.category,
       table.inCategoryId
     ),
-
-    // Pagination + filters (rough equivalent of your Mongo indexes)
     categoryPublishedCreatedIdx: index("posts_category_published_created_idx").on(
       table.category,
       table.isPublished,
@@ -153,12 +147,174 @@ export const posts = pgTable(
 export const postsRelations = relations(posts, ({ one }) => ({
   ownerUser: one(users, {
     fields: [posts.owner],
-    references: [users.id],
+    references: [users._id],
   }),
 }));
 
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
+
+// import {
+//   pgTable,
+//   uuid,
+//   varchar,
+//   text,
+//   integer,
+//   boolean,
+//   timestamp,
+//   index,
+//   uniqueIndex,
+//   jsonb,
+//   numeric,
+// } from "drizzle-orm/pg-core";
+// import { relations, sql } from "drizzle-orm";
+// import { users } from "./user.schema";
+
+// export type PostStoreItem = {
+//   storeisActive?: boolean;
+//   storeIconSize?: "L" | "S";
+//   storeId?: string;
+//   storeUrl?: string;
+// };
+
+// export type PostProductItem = {
+//   productisActive?: boolean;
+//   productIconSize?: "L" | "S";
+//   ProductId?: string;
+//   productUrl?: string;
+// };
+
+// export type PostImageItem = {
+//   url: string;
+//   Imageposition?: number;
+//   position?: number;
+// };
+
+// export type PostVideoItem = {
+//   url: string;
+//   Videoposition?: number;
+//   position?: number;
+//   autoplay?: boolean;
+//   thumbnail?: string | null;
+//   posturl?: string | null;
+// };
+
+// export const posts = pgTable(
+//   "posts",
+//   {
+//     // Frontend expects Mongo-style `_id`
+//     _id: uuid("_id").defaultRandom().primaryKey(),
+
+//     // Unique ids used by your frontend/backfill scripts
+//     postIdUnique: varchar("post_id_unique", { length: 255 }).notNull(),
+//     inCategoryId: varchar("in_category_id", { length: 255 }).notNull(),
+
+//     // Store as a normal string; you already normalize empty -> "All" in service
+//     category: varchar("category", { length: 255 }).notNull(),
+
+//     title: text("title").default(sql`null`),
+//     description: text("description").default(sql`null`),
+
+//     owner: uuid("owner").notNull().references(() => users._id, {
+//       onDelete: "cascade",
+//     }),
+
+//     // Arrays-of-objects from your old schema
+//     store: jsonb("store").$type<PostStoreItem[]>().notNull().default([]),
+//     product: jsonb("product").$type<PostProductItem[]>().notNull().default([]),
+
+//     imageFiles: jsonb("image_files").$type<PostImageItem[]>().notNull().default([]),
+//     videoFiles: jsonb("video_files").$type<PostVideoItem[]>().notNull().default([]),
+
+//     audioFile: text("audio_file").default(sql`null`),
+//     song: text("song").array().notNull().default([]),
+
+//     // Counts
+//     videocount: integer("videocount").notNull().default(0),
+//     imagecount: integer("imagecount").notNull().default(0),
+//     audiocount: integer("audiocount").notNull().default(0),
+
+//     // Layout / type
+//     pattern: varchar("pattern", { length: 50 }).notNull().default("1"),
+//     postType: varchar("post_type", { length: 50 }).default(sql`null`),
+
+//     views: integer("views").notNull().default(0),
+//     isPublished: boolean("is_published").notNull().default(true),
+
+//     // Social fields
+//     whatsapp: text("whatsapp").default(sql`null`),
+//     storeLink: text("store_link").default(sql`null`),
+//     facebook: text("facebook").default(sql`null`),
+//     instagram: text("instagram").default(sql`null`),
+//     productlink: text("productlink").default(sql`null`),
+
+//     // URL fields
+//     facebookurl: text("facebookurl").default(sql`null`),
+//     instagramurl: text("instagramurl").default(sql`null`),
+//     whatsappnumberurl: text("whatsappnumberurl").default(sql`null`),
+//     storelinkurl: text("storelinkurl").default(sql`null`),
+
+//     // Rating fields
+//     totalRating: integer("total_rating").notNull().default(0),
+//     ratingCount: integer("rating_count").notNull().default(0),
+//     averageRating: numeric("average_rating", { precision: 5, scale: 2 })
+//       .notNull()
+//       .default("0"),
+
+//     totalViews: integer("total_views").notNull().default(0),
+//     commentCount: integer("comment_count").notNull().default(0),
+
+//     createdAt: timestamp("created_at").defaultNow().notNull(),
+//     updatedAt: timestamp("updated_at")
+//       .defaultNow()
+//       .notNull()
+//       .$onUpdate(() => new Date()),
+//   },
+//   (table) => ({
+//     postIdUniqueIdx: uniqueIndex("posts_post_id_unique_unique").on(table.postIdUnique),
+//     categoryInCategoryUnique: uniqueIndex("posts_category_in_category_unique").on(
+//       table.category,
+//       table.inCategoryId
+//     ),
+
+//     // Pagination + filters (rough equivalent of your Mongo indexes)
+//     categoryPublishedCreatedIdx: index("posts_category_published_created_idx").on(
+//       table.category,
+//       table.isPublished,
+//       table.createdAt
+//     ),
+//     publishedCreatedIdx: index("posts_published_created_idx").on(
+//       table.isPublished,
+//       table.createdAt
+//     ),
+//     categoryPublishedViewsIdx: index("posts_category_published_total_views_idx").on(
+//       table.category,
+//       table.isPublished,
+//       table.totalViews
+//     ),
+//     categoryPublishedRatingIdx: index("posts_category_published_avg_rating_idx").on(
+//       table.category,
+//       table.isPublished,
+//       table.averageRating
+//     ),
+//     ownerPublishedCreatedIdx: index("posts_owner_published_created_idx").on(
+//       table.owner,
+//       table.isPublished,
+//       table.createdAt
+//     ),
+//     ownerCreatedIdx: index("posts_owner_created_idx").on(table.owner, table.createdAt),
+//   })
+// );
+
+// export const postsRelations = relations(posts, ({ one }) => ({
+//   ownerUser: one(users, {
+//     fields: [posts.owner],
+//     references: [users._id],
+//   }),
+// }));
+
+// export type Post = typeof posts.$inferSelect;
+// export type NewPost = typeof posts.$inferInsert;
 
 // //optimized code
 // import mongoose, { Schema } from "mongoose";
@@ -381,10 +537,10 @@ export type NewPost = typeof posts.$inferInsert;
 // postSchema.plugin(mongooseAggregatePaginate)
 
 // // ============================================
-// // ✅ OPTIMIZED INDEXES FOR CURSOR PAGINATION
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ OPTIMIZED INDEXES FOR CURSOR PAGINATION
 // // ============================================
 
-// // 1️⃣ UNIQUE CONSTRAINT (must come first)
+// // 1ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ UNIQUE CONSTRAINT (must come first)
 // postSchema.index(
 //     { category: 1, inCategoryId: 1 }, 
 //     { 
@@ -393,14 +549,14 @@ export type NewPost = typeof posts.$inferInsert;
 //     }
 // );
 
-// // 2️⃣ TEXT SEARCH INDEX
+// // 2ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ TEXT SEARCH INDEX
 // postSchema.index({ 
 //     title: "text", 
 //     description: "text", 
 //     category: "text" 
 // });
 
-// // 3️⃣ CURSOR PAGINATION - CATEGORY + CREATED_AT (Most Common)
+// // 3ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ CURSOR PAGINATION - CATEGORY + CREATED_AT (Most Common)
 // postSchema.index({ 
 //     category: 1, 
 //     isPublished: 1, 
@@ -414,7 +570,7 @@ export type NewPost = typeof posts.$inferInsert;
 //     inCategoryId: -1 
 // });
 
-// // 4️⃣ CURSOR PAGINATION - CATEGORY + TOTAL_VIEWS
+// // 4ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ CURSOR PAGINATION - CATEGORY + TOTAL_VIEWS
 // postSchema.index({ 
 //     category: 1, 
 //     isPublished: 1, 
@@ -428,7 +584,7 @@ export type NewPost = typeof posts.$inferInsert;
 //     inCategoryId: -1 
 // });
 
-// // 5️⃣ CURSOR PAGINATION - CATEGORY + AVERAGE_RATING
+// // 5ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ CURSOR PAGINATION - CATEGORY + AVERAGE_RATING
 // postSchema.index({ 
 //     category: 1, 
 //     isPublished: 1, 
@@ -442,7 +598,7 @@ export type NewPost = typeof posts.$inferInsert;
 //     inCategoryId: -1 
 // });
 
-// // 6️⃣ CURSOR PAGINATION - USER POSTS (By Created Date)
+// // 6ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ CURSOR PAGINATION - USER POSTS (By Created Date)
 // postSchema.index({ 
 //     owner: 1, 
 //     isPublished: 1, 
@@ -456,26 +612,26 @@ export type NewPost = typeof posts.$inferInsert;
 //     inCategoryId: -1 
 // });
 
-// // 7️⃣ CURSOR PAGINATION - USER POSTS (By Views)
+// // 7ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ CURSOR PAGINATION - USER POSTS (By Views)
 // postSchema.index({ 
 //     owner: 1, 
 //     totalViews: -1, 
 //     inCategoryId: -1 
 // });
 
-// // 8️⃣ CURSOR PAGINATION - USER POSTS (By Rating)
+// // 8ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ CURSOR PAGINATION - USER POSTS (By Rating)
 // postSchema.index({ 
 //     owner: 1, 
 //     averageRating: -1, 
 //     inCategoryId: -1 
 // });
 
-// // 9️⃣ FALLBACK INDEXES (for queries without category/owner)
+// // 9ÃƒÂ¯Ã‚Â¸Ã‚ÂÃƒÂ¢Ã†â€™Ã‚Â£ FALLBACK INDEXES (for queries without category/owner)
 // postSchema.index({ createdAt: -1, inCategoryId: -1 });
 // postSchema.index({ totalViews: -1, inCategoryId: -1 });
 // postSchema.index({ averageRating: -1, inCategoryId: -1 });
 
-// // 🔟 SINGLE FIELD INDEXES (for specific lookups)
+// // ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ…Â¸ SINGLE FIELD INDEXES (for specific lookups)
 // postSchema.index({ owner: 1 });
 // postSchema.index({ isPublished: 1 });
 
@@ -851,7 +1007,7 @@ export type NewPost = typeof posts.$inferInsert;
 
 // // postSchema.plugin(mongooseAggregatePaginate)
 
-// // // ✅ Optimized compound index for your category query
+// // // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Optimized compound index for your category query
 // // postSchema.index({ category: 1, isPublished: 1, createdAt: -1 });
 
 // // // ============ OPTIMIZED INDEXES ============

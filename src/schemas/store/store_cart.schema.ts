@@ -1,4 +1,4 @@
-// src/db/schema/store_cart.schema.ts
+﻿// src/db/schema/store_cart.schema.ts
 import {
   pgTable,
   bigserial,
@@ -13,7 +13,7 @@ import {
 import { relations } from "drizzle-orm";
 
 export const store_cart = pgTable("store_cart", {
-  id: bigserial("id", { mode: "number" }).primaryKey(),
+  _id: bigserial("_id", { mode: "number" }).primaryKey(),
 
   userId: uuid("user_id" ),
 
@@ -30,11 +30,11 @@ export const store_cart = pgTable("store_cart", {
 }));
 
 export const store_cart_item = pgTable("store_cart_item", {
-  id: bigserial("id", { mode: "number" }).primaryKey(),
+  _id: bigserial("_id", { mode: "number" }).primaryKey(),
 
   storeCartId: bigint("store_cart_id", { mode: "number" })
     .notNull()
-    .references(() => store_cart.id, { onDelete: "cascade" }),
+    .references(() => store_cart._id, { onDelete: "cascade" }),
 
   productId: uuid("product_id"),
 
@@ -62,7 +62,7 @@ export const storeCartRelations = relations(store_cart, ({ many }) => ({
 export const storeCartItemRelations = relations(store_cart_item, ({ one }) => ({
   cart: one(store_cart, {
     fields: [store_cart_item.storeCartId],
-    references: [store_cart.id],
+    references: [store_cart._id],
   }),
 }));
 
@@ -72,5 +72,5 @@ export type NewStoreCart = typeof store_cart.$inferInsert;
 export type StoreCartItem = typeof store_cart_item.$inferSelect;
 export type NewStoreCartItem = typeof store_cart_item.$inferInsert;
 
-// ✅ ADD THIS ONE LINE
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ ADD THIS ONE LINE
 export type StoreCartWithItems = StoreCart & { items: StoreCartItem[] };

@@ -1,4 +1,4 @@
-// src/db/schema/store_order.schema.ts
+﻿// src/db/schema/store_order.schema.ts
 import {
   pgTable,
   uuid,
@@ -13,7 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// ✅ Enums
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Enums
 export const orderStatusEnum = pgEnum("order_status", [
   "pending",
   "processing",
@@ -51,7 +51,7 @@ export const itemPaymentStatusEnum = pgEnum("item_payment_status", [
   "refunded",
 ]);
 
-// ✅ Order Table
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Order Table
 export const store_order = pgTable(
   "store_order",
   {
@@ -113,7 +113,7 @@ export const store_order = pgTable(
   })
 );
 
-// ✅ Order Item Table (separate — instead of JSONB)
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Order Item Table (separate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â instead of JSONB)
 export const store_order_item = pgTable(
   "store_order_item",
   {
@@ -152,7 +152,7 @@ export const store_order_item = pgTable(
   })
 );
 
-// ✅ Relations
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Relations
 export const storeOrderRelations = relations(store_order, ({ many }) => ({
   items: many(store_order_item),
 }));
@@ -167,7 +167,7 @@ export const storeOrderItemRelations = relations(
   })
 );
 
-// ✅ Types
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Types
 export type StoreOrder = typeof store_order.$inferSelect;
 export type NewStoreOrder = typeof store_order.$inferInsert;
 export type StoreOrderItem = typeof store_order_item.$inferSelect;
@@ -190,7 +190,7 @@ export type StoreOrderWithItems = StoreOrder & { items: StoreOrderItem[] };
 // } from "drizzle-orm/pg-core";
 // import { relations } from "drizzle-orm";
 
-// // ✅ Enums
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Enums
 // export const orderStatusEnum = pgEnum("order_status", [
 //   "pending",
 //   "processing",
@@ -228,7 +228,7 @@ export type StoreOrderWithItems = StoreOrder & { items: StoreOrderItem[] };
 //   "refunded",
 // ]);
 
-// // ✅ Order Table
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Order Table
 // export const store_order = pgTable(
 //   "store_order",
 //   {
@@ -290,7 +290,7 @@ export type StoreOrderWithItems = StoreOrder & { items: StoreOrderItem[] };
 //   })
 // );
 
-// // ✅ Order Item Table (separate — instead of JSONB)
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Order Item Table (separate ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â instead of JSONB)
 // export const store_order_item = pgTable(
 //   "store_order_item",
 //   {
@@ -329,7 +329,7 @@ export type StoreOrderWithItems = StoreOrder & { items: StoreOrderItem[] };
 //   })
 // );
 
-// // ✅ Relations
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Relations
 // export const storeOrderRelations = relations(store_order, ({ many }) => ({
 //   items: many(store_order_item),
 // }));
@@ -344,7 +344,7 @@ export type StoreOrderWithItems = StoreOrder & { items: StoreOrderItem[] };
 //   })
 // );
 
-// // ✅ Types
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Types
 // export type StoreOrder = typeof store_order.$inferSelect;
 // export type NewStoreOrder = typeof store_order.$inferInsert;
 // export type StoreOrderItem = typeof store_order_item.$inferSelect;

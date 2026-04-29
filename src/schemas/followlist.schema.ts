@@ -1,4 +1,4 @@
-// src/db/schema/followlist.schema.ts
+﻿// src/db/schema/followlist.schema.ts
 import { pgTable, uuid, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { users } from "./user.schema";
@@ -6,13 +6,13 @@ import { users } from "./user.schema";
 export const followLists = pgTable(
   "follow_lists",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    _id: uuid("_id").defaultRandom().primaryKey(),
     followerId: uuid("follower_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => users._id, { onDelete: "cascade" }),
     followingId: uuid("following_id")
       .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+      .references(() => users._id, { onDelete: "cascade" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({
@@ -26,12 +26,12 @@ export const followLists = pgTable(
 export const followListsRelations = relations(followLists, ({ one }) => ({
   follower: one(users, {
     fields: [followLists.followerId],
-    references: [users.id],
+    references: [users._id],
     relationName: "following",
   }),
   following: one(users, {
     fields: [followLists.followingId],
-    references: [users.id],
+    references: [users._id],
     relationName: "followers",
   }),
 }));

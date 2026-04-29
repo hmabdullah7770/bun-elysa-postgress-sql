@@ -1,4 +1,4 @@
-// src/db/schema/user.schema.ts
+﻿// src/db/schema/user.schema.ts
 import {
   pgTable,
   text,
@@ -20,7 +20,7 @@ export const genderEnum = pgEnum("gender", [
 export const users = pgTable(
   "users",
   {
-    id: uuid("id").defaultRandom().primaryKey(),
+    _id: uuid("_id").defaultRandom().primaryKey(),
     username: varchar("username", { length: 255 }).notNull().unique(),
     email: varchar("email", { length: 255 }).notNull().unique(),
     password: text("password").notNull(),
@@ -32,7 +32,7 @@ export const users = pgTable(
     refreshToken: text("refresh_token"),
     otp: text("otp"),
 
-    // Social links — at least one required (validated in service layer)
+    // Social links ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â at least one required (validated in service layer)
     // PostgreSQL unique allows multiple NULLs (replaces sparse:true)
     whatsapp: varchar("whatsapp", { length: 255 }).unique(),
     storeLink: text("store_link").unique(),

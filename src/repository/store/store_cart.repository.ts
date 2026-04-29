@@ -1,4 +1,4 @@
-// src/repository/store/store_cart.repository.ts
+﻿// src/repository/store/store_cart.repository.ts
 import { eq, and, SQL, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import { store_product } from "../../schemas/store/store_product.schema"; // <-- replace with your real schema
@@ -15,7 +15,7 @@ import { ApiError } from "../../utils/ApiError";
 
 export class StoreCartRepository {
 
-  // ─── Find cart by userId + storeId ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Find cart by userId + storeId Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async findByUserAndStore(
     userId: string,
     storeId: string
@@ -39,7 +39,7 @@ export class StoreCartRepository {
 
     return await db
       .select({
-        id: store_product.id,
+        _id: store_product._id,
         storeId: store_product.storeId,
         productName: store_product.productName,
         productImages: store_product.productImages,
@@ -54,14 +54,14 @@ export class StoreCartRepository {
       .where(
         and(
           eq(store_product.storeId, storeId),
-          inArray(store_product.id, productIds)
+          inArray(store_product._id, productIds)
         )
       );
   }
   
 
 
-  // ─── Create cart ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Create cart Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async create(data: NewStoreCart): Promise<StoreCart> {
     const result = await db
       .insert(store_cart)
@@ -75,10 +75,10 @@ export class StoreCartRepository {
     return result[0];
   }
 
-  // ─── Delete cart ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Delete cart Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async deleteByUserAndStore(
-    userId: string,    // ✅ string (UUID)
-    storeId: string    // ✅ string (UUID)
+    userId: string,    // Ã¢Å“â€¦ string (UUID)
+    storeId: string    // Ã¢Å“â€¦ string (UUID)
   ) {
     return await db
       .delete(store_cart)
@@ -91,17 +91,17 @@ export class StoreCartRepository {
       .returning();
   }
 
-  // ─── Find cart item ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Find cart item Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async findStoreCartItem(
-    storeCartId: number,   // ✅ number (BIGINT - store_cart.id)
-    productId: string,     // ✅ string (UUID)
+    storeCartId: number,   // Ã¢Å“â€¦ number (BIGINT - store_cart._id)
+    productId: string,     // Ã¢Å“â€¦ string (UUID)
     colorId: number | null,
     size: string | null,
   ): Promise<StoreCartItem | undefined> {
 
     const conditions: SQL[] = [
       eq(store_cart_item.storeCartId, storeCartId),
-      eq(store_cart_item.productId, productId),  // ✅ UUID string
+      eq(store_cart_item.productId, productId),  // Ã¢Å“â€¦ UUID string
     ];
 
     if (colorId !== null) {
@@ -117,7 +117,7 @@ export class StoreCartRepository {
     });
   }
 
-  // ─── Add item to cart ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Add item to cart Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async addItem(data: NewStoreCartItem): Promise<StoreCartItem> {
     const result = await db
       .insert(store_cart_item)
@@ -131,7 +131,7 @@ export class StoreCartRepository {
     return result[0];
   }
 
-  // ─── Update item quantity ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Update item quantity Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async updateItemQuantity(
     itemId: number,
     quantity: number
@@ -139,7 +139,7 @@ export class StoreCartRepository {
     const result = await db
       .update(store_cart_item)
       .set({ quantity })
-      .where(eq(store_cart_item.id, itemId))
+      .where(eq(store_cart_item._id, itemId))
       .returning();
 
     if (!result[0]) {
@@ -149,18 +149,18 @@ export class StoreCartRepository {
     return result[0];
   }
 
-  // ─── Remove single item ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Remove single item Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async removeItem(itemId: number): Promise<StoreCartItem[]> {
     return await db
       .delete(store_cart_item)
-      .where(eq(store_cart_item.id, itemId))
+      .where(eq(store_cart_item._id, itemId))
       .returning();
   }
 
-  // ─── Remove all items by productId ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Remove all items by productId Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async removeByProduct(
     storeCartId: number,
-    productId: string    // ✅ string (UUID)
+    productId: string    // Ã¢Å“â€¦ string (UUID)
   ): Promise<StoreCartItem[]> {
     return await db
       .delete(store_cart_item)
@@ -173,7 +173,7 @@ export class StoreCartRepository {
       .returning();
   }
 
-  // ─── Get all items ───
+  // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Get all items Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async getStoreCartItems(
     storeCartId: number
   ): Promise<StoreCartItem[]> {

@@ -1,4 +1,4 @@
-// src/repositories/otp.repository.ts
+﻿// src/repositories/otp.repository.ts
 import { eq, and } from "drizzle-orm";
 import { db } from "../db/index";
 import { otps, type NewOtp, type Otp } from "../schemas/otp.schema";
@@ -32,7 +32,7 @@ export class OtpRepository {
   }
 
   async deleteById(id: string) {
-    return db.delete(otps).where(eq(otps.id, id));
+    return db.delete(otps).where(eq(otps._id, id));
   }
 
   async upsertByEmail(

@@ -1,13 +1,13 @@
-// src/services/store_cart.service.ts
+﻿// src/services/store_cart.service.ts
 import { storeCartRepository } from "../../repository/store/store_cart.repository";
 import { ApiError } from "../../utils/ApiError";
 import type { StoreCartItem } from "../../schemas/store/store_cart.schema";
 
-// ─── Input Interfaces ───
+// â”€â”€â”€ Input Interfaces â”€â”€â”€
 interface AddToStoreCartInput {
-  userId: string;      // ✅ string (UUID)
-  storeId: string;     // ✅ string (UUID)
-  productId: string;   // ✅ string (UUID)
+  userId: string;      // âœ… string (UUID)
+  storeId: string;     // âœ… string (UUID)
+  productId: string;   // âœ… string (UUID)
   quantity: number;
   replaceQuantity: boolean;
   color: {
@@ -19,18 +19,18 @@ interface AddToStoreCartInput {
 }
 
 interface RemoveFromStoreCartInput {
-  userId: string;      // ✅ string (UUID)
-  storeId: string;     // ✅ string (UUID)
-  productId: string;   // ✅ string (UUID)
+  userId: string;      // âœ… string (UUID)
+  storeId: string;     // âœ… string (UUID)
+  productId: string;   // âœ… string (UUID)
   color: {
     _id: number | null;
   } | null;
   size: string | null;
 }
 
-// ─── Response Interfaces ───
+// â”€â”€â”€ Response Interfaces â”€â”€â”€
 interface CartItemResponse {
-  productId: string;   // ✅ string (UUID)
+  productId: string;   // âœ… string (UUID)
   quantity: number;
   color: {
     _id: number;
@@ -49,7 +49,7 @@ interface GetCartResponse {
 
 export class StoreCartService {
 
-  // ─── ADD TO CART ───
+  // â”€â”€â”€ ADD TO CART â”€â”€â”€
   async addToStoreCart(input: AddToStoreCartInput) {
     const {
       userId,
@@ -70,27 +70,27 @@ export class StoreCartService {
     const normalizedColorIndex: number | null = color?.index ?? null;
     const normalizedSize: string | null = size ?? null;
 
-    // ─── Find or Create Cart ───
+    // â”€â”€â”€ Find or Create Cart â”€â”€â”€
     let cart = await storeCartRepository.findByUserAndStore(
-      userId,    // ✅ UUID string
-      storeId    // ✅ UUID string
+      userId,    // âœ… UUID string
+      storeId    // âœ… UUID string
     );
 
     if (!cart) {
-      // ✅ Create new cart with UUID strings
+      // âœ… Create new cart with UUID strings
       const newCart = await storeCartRepository.create({
-        userId,   // ✅ UUID string
-        storeId   // ✅ UUID string
+        userId,   // âœ… UUID string
+        storeId   // âœ… UUID string
       });
 
       if (!newCart) {
         throw new ApiError(500, "Failed to create cart");
       }
 
-      // ✅ Add first item
+      // âœ… Add first item
       await storeCartRepository.addItem({
-        storeCartId: newCart.id,   // ✅ BIGINT number
-        productId,                 // ✅ UUID string
+        storeCartId: newCart._id,   // âœ… BIGINT number
+        productId,                 // âœ… UUID string
         quantity,
         colorId: normalizedColorId,
         colorValue: normalizedColorValue,
@@ -100,8 +100,8 @@ export class StoreCartService {
 
     } else {
       const existingItem = await storeCartRepository.findStoreCartItem(
-        cart.id,       // ✅ BIGINT number
-        productId,     // ✅ UUID string
+        cart._id,       // âœ… BIGINT number
+        productId,     // âœ… UUID string
         normalizedColorId,
         normalizedSize,
       );
@@ -112,13 +112,13 @@ export class StoreCartService {
           : existingItem.quantity + quantity;
 
         await storeCartRepository.updateItemQuantity(
-          existingItem.id,
+          existingItem._id,
           newQuantity
         );
       } else {
         await storeCartRepository.addItem({
-          storeCartId: cart.id,  // ✅ BIGINT number
-          productId,             // ✅ UUID string
+          storeCartId: cart._id,  // âœ… BIGINT number
+          productId,             // âœ… UUID string
           quantity,
           colorId: normalizedColorId,
           colorValue: normalizedColorValue,
@@ -129,12 +129,12 @@ export class StoreCartService {
     }
 
     return await storeCartRepository.findByUserAndStore(
-      userId,   // ✅ UUID string
-      storeId   // ✅ UUID string
+      userId,   // âœ… UUID string
+      storeId   // âœ… UUID string
     );
   }
 
-  // ─── GET CART ───
+  // â”€â”€â”€ GET CART â”€â”€â”€
 
   async getStoreCart(
   userId: string,
@@ -164,7 +164,7 @@ export class StoreCartService {
     storeId
   );
 
-  const productMap = new Map(products.map((p) => [p.id, p]));
+  const productMap = new Map(products.map((p) => [p._id, p]));
 
   const items = cart.items.map((item) => {
     const product = productMap.get(item.productId as string);
@@ -175,7 +175,7 @@ export class StoreCartService {
     const stock = Number(product?.stock ?? 0);
 
     return {
-      _id :item.id,
+      _id :item._id,
       productId: item.productId as string,
       productName: product?.productName ?? null,
       productImages: product?.productImages ?? [],
@@ -219,13 +219,13 @@ export class StoreCartService {
 }
 
   
-  // ─── REMOVE FROM CART ───
+  // â”€â”€â”€ REMOVE FROM CART â”€â”€â”€
   async removeFromStoreCart(input: RemoveFromStoreCartInput) {
     const { userId, storeId, productId, color, size } = input;
 
     const cart = await storeCartRepository.findByUserAndStore(
-      userId,    // ✅ UUID string
-      storeId    // ✅ UUID string
+      userId,    // âœ… UUID string
+      storeId    // âœ… UUID string
     );
 
     if (!cart) {
@@ -239,8 +239,8 @@ export class StoreCartService {
       const normalizedSize: string | null = size ?? null;
 
       const existingItem = await storeCartRepository.findStoreCartItem(
-        cart.id,       // ✅ BIGINT number
-        productId,     // ✅ UUID string
+        cart._id,       // âœ… BIGINT number
+        productId,     // âœ… UUID string
         normalizedColorId,
         normalizedSize,
       );
@@ -252,10 +252,10 @@ export class StoreCartService {
         );
       }
 
-      await storeCartRepository.removeItem(existingItem.id);
+      await storeCartRepository.removeItem(existingItem._id);
 
     } else {
-      // ✅ Compare UUID strings
+      // âœ… Compare UUID strings
       const matchedItems: StoreCartItem[] = cart.items.filter(
         (item: StoreCartItem): boolean => item.productId === productId,
       );
@@ -265,21 +265,21 @@ export class StoreCartService {
       }
 
       await storeCartRepository.removeByProduct(
-        cart.id,     // ✅ BIGINT number
-        productId    // ✅ UUID string
+        cart._id,     // âœ… BIGINT number
+        productId    // âœ… UUID string
       );
     }
 
     return await storeCartRepository.findByUserAndStore(
-      userId,    // ✅ UUID string
-      storeId    // ✅ UUID string
+      userId,    // âœ… UUID string
+      storeId    // âœ… UUID string
     );
   }
 
-  // ─── CLEAR CART ───
+  // â”€â”€â”€ CLEAR CART â”€â”€â”€
   async clearStoreCart(
-    userId: string,    // ✅ UUID string
-    storeId: string    // ✅ UUID string
+    userId: string,    // âœ… UUID string
+    storeId: string    // âœ… UUID string
   ): Promise<null> {
     const cart = await storeCartRepository.findByUserAndStore(userId, storeId);
 

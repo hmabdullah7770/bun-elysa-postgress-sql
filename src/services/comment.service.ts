@@ -1,6 +1,7 @@
-import { ApiError } from "../utils/ApiError";
+﻿import { ApiError } from "../utils/ApiError";
 import { commentRepository } from "../repository/comment.repository";
 import { uploadResult, saveTempFile } from "../utils/cloudinary";
+import {isValidId} from "../Validators/bigintvalidator"
 
 const deriveCommentType = (input: {
   content?: string | null;
@@ -421,6 +422,20 @@ export class CommentService {
       pinnedComment = "true",
     } = params.query ?? {};
 
+    const postId = params.postId; 
+
+
+    if (!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
+
+  const postExists = await commentRepository.findPostById(postId);
+  if (!postExists) {
+    throw new ApiError(404, "Post not found");
+  }
+
+
+
     const limitNumber = Math.max(1, Number(limit) || 25);
     const shouldIncludeReplies = includeReplies === "true";
     const shouldIncludeGrandTotal = includeGrandTotal === "true";
@@ -428,6 +443,7 @@ export class CommentService {
     const shouldGetRepliesCount = getRepliesCount === "true";
     const shouldGetPinnedComment = pinnedComment === "true";
 
+    
     const cursorRow = cursor ? await commentRepository.findByInCommentId(String(cursor)) : undefined;
     const cursorCreatedAt = cursorRow?.createdAt ?? null;
 

@@ -1,8 +1,8 @@
-// src/controller/store/createstore.controller.ts
+﻿// src/controller/store/createstore.controller.ts
 import { createStoreService } from "../../services/store/createstore.service";
 import { ApiResponse } from "../../utils/ApiResponse";
 
-// ──────────────── Public Controllers ────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Public Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // GET /api/v1/stores/top-rated
 export const getTopRatedStores = async ({ query }: any) => {
@@ -26,15 +26,15 @@ export const incrementClickCount = async ({ params }: any) => {
   return new ApiResponse(200, null, "Click count incremented");
 };
 
-// ──────────────── Protected Controllers ────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Protected Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // POST /api/v1/stores
 export const createStore = async ({ body, userVerified }: any) => {
   const store = await createStoreService.createStore({
     storeName: body.storeName,
     category: body.category,
-    storeLogo: body.storeLogo,   // ← comes from body directly (multipart)
-    ownerId: userVerified._id,            // ← comes from context
+    storeLogo: body.storeLogo,   // â† comes from body directly (multipart)
+    ownerId: userVerified._id,            // â† comes from context
   });
   return new ApiResponse(201, store, "Store created successfully");
 };
@@ -49,7 +49,7 @@ export const getUserStores = async ({ userVerified  }: any) => {
 // GET /api/v1/stores/my-ratings
 export const getUserRatedStores = async ({ user, query }: any) => {
   const stores = await createStoreService.getUserRatedStores(
-    user.id,
+    user._id,
     parseInt(query.page) || 1,
     parseInt(query.limit) || 10
   );
@@ -64,7 +64,7 @@ export const updateStore = async ({ params, body, userVerified }: any) => {
     {
       storeName: body.storeName,
       category: body.category,
-      storeLogo: body.storeLogo,  // ← comes from body directly (multipart)
+      storeLogo: body.storeLogo,  // â† comes from body directly (multipart)
     }
   );
   return new ApiResponse(200, store, "Store updated successfully");
@@ -72,7 +72,7 @@ export const updateStore = async ({ params, body, userVerified }: any) => {
 
 // DELETE /api/v1/stores/:storeId
 export const deleteStore = async ({ params, user }: any) => {
-  await createStoreService.deleteStore(params.storeId, user.id);
+  await createStoreService.deleteStore(params.storeId, user._id);
   return new ApiResponse(200, null, "Store deleted successfully");
 };
 
@@ -80,7 +80,7 @@ export const deleteStore = async ({ params, user }: any) => {
 export const rateStore = async ({ body, user }: any) => {
   const storeRating = await createStoreService.rateStore({
     storeId: body.storeId,
-    userId: user.id,
+    userId: user._id,
     rating: parseInt(body.rating),
   });
   return new ApiResponse(200, storeRating, "Store rated successfully");

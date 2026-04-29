@@ -1,4 +1,4 @@
-import {
+﻿import {
   pgTable,
   uuid,
   text,
@@ -56,7 +56,7 @@ export const comments = pgTable(
 
     pinned: boolean("pinned").notNull().default(false),
 
-    owner: uuid("owner").notNull().references(() => users.id, {
+    owner: uuid("owner").notNull().references(() => users._id, {
       onDelete: "cascade",
     }),
 
@@ -106,7 +106,7 @@ export const comments = pgTable(
 export const commentsRelations = relations(comments, ({ one }) => ({
   ownerUser: one(users, {
     fields: [comments.owner],
-    references: [users.id],
+    references: [users._id],
   }),
 }));
 

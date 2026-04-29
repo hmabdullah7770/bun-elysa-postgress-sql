@@ -1,4 +1,4 @@
-// import mongoose, { Schema } from "mongoose";
+﻿// import mongoose, { Schema } from "mongoose";
 // import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 // const biddingSchema = new Schema(
@@ -74,7 +74,7 @@
 // // Indexes for performance
 // biddingSchema.index({ postId: 1, bidAmount: -1 });
 // biddingSchema.index({ userId: 1, createdAt: -1 });
-// // ✅ Create compound index for performance
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Create compound index for performance
 // biddingSchema.index({ postId: 1, userId: 1 });
 
 // biddingSchema.index({ bidForUserId: 1, bidAmount: -1 });

@@ -1,8 +1,15 @@
-import { ApiResponse } from "../utils/ApiResponse";
+﻿import { ApiResponse } from "../utils/ApiResponse";
 import { commentService } from "../services/comment.service";
+import { isValidId } from "../Validators/bigintvalidator";
+import { ApiError } from "../utils/ApiError";
 
 export const newAddComment = async ({ params, body, userVerified }: any) => {
   const postId = params.postId;
+  
+  if (!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
+
   const files = {
     audioComment: body?.audioComment,
     videoComment: body?.videoComment,
@@ -43,6 +50,10 @@ export const newDeleteComment = async ({ params, body, userVerified }: any) => {
   const commentId = Number(params.commentId);
   const postId = body?.postId;
 
+  if(!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
+
   const result = await commentService.deleteComment({
     commentId,
     ownerId: userVerified._id,
@@ -54,6 +65,8 @@ export const newDeleteComment = async ({ params, body, userVerified }: any) => {
 
 export const newGetComments = async ({ params, query, userVerified }: any) => {
   const postId = params.postId;
+
+  
   const data = await commentService.getComments({
     postId,
     userId: userVerified._id,
@@ -106,6 +119,10 @@ export const pinComment = async ({ params, body, userVerified }: any) => {
 export const unpinComment = async ({ params, body, userVerified }: any) => {
   const commentId = Number(params.commentId);
   const postId = body?.postId;
+   if (!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
+
   const data = await commentService.unpinComment({
     commentId,
     postId,
@@ -154,7 +171,7 @@ export const searchComments = async ({ params, query, userVerified }: any) => {
   return new ApiResponse(200, data, `Found ${data.pagination.totalMatches} matching comment${data.pagination.totalMatches !== 1 ? "s" : ""}`);
 };
 
-// Not yet supported in Postgres (ratings still Mongo in this repo) — keep endpoint stable.
+// Not yet supported in Postgres (ratings still Mongo in this repo) â€” keep endpoint stable.
 export const newGetCommentsWithRatings = async ({ params }: any) => {
   return new ApiResponse(
     200,

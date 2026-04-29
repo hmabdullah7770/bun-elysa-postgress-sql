@@ -1,13 +1,13 @@
-// src/controller/store/store_product.controller.ts
+﻿// src/controller/store/store_product.controller.ts
 import { ApiResponse } from "../../utils/ApiResponse";
 import { ApiError } from "../../utils/ApiError";
 import { storeProductService } from "../../services/store/store_product.service";
 
-// ✅ Add product
+// âœ… Add product
 export const addProduct = async ({ params, body }: any) => {
   const { storeId } = params;
 
-  // ✅ Get files by index from body
+  // âœ… Get files by index from body
   const filesByIndex: Record<number, any> = {};
   for (let i = 0; i <= 9; i++) {
     const file = body[`productImage${i}`];
@@ -23,7 +23,7 @@ export const addProduct = async ({ params, body }: any) => {
   return new ApiResponse(201, product, "Product added successfully");
 };
 
-// ✅ Get store products
+// âœ… Get store products
 export const getStoreProducts = async ({ params, query }: any) => {
   const { storeId } = params;
 
@@ -35,7 +35,7 @@ export const getStoreProducts = async ({ params, query }: any) => {
   return new ApiResponse(200, products, "Products fetched successfully");
 };
 
-// ✅ Get product by ID
+// âœ… Get product by ID
 export const getProductById = async ({ params }: any) => {
   const { productId } = params;
 
@@ -44,11 +44,11 @@ export const getProductById = async ({ params }: any) => {
   return new ApiResponse(200, product, "Product fetched successfully");
 };
 
-// ✅ Update product
+// âœ… Update product
 export const updateProduct = async ({ params, body }: any) => {
   const { productId, storeId } = params;
 
-  // ✅ Get files by index
+  // âœ… Get files by index
   const filesByIndex: Record<number, any> = {};
   for (let i = 0; i <= 9; i++) {
     const file = body[`productImage${i}`];
@@ -65,7 +65,7 @@ export const updateProduct = async ({ params, body }: any) => {
   return new ApiResponse(200, product, "Product updated successfully");
 };
 
-// ✅ Delete product
+// âœ… Delete product
 export const deleteProduct = async ({ params }: any) => {
   const { productId, storeId } = params;
 
@@ -74,7 +74,7 @@ export const deleteProduct = async ({ params }: any) => {
   return new ApiResponse(200, null, "Product deleted successfully");
 };
 
-// ✅ Remove product image
+// âœ… Remove product image
 export const removeProductImage = async ({ params, body }: any) => {
   const { productId, storeId } = params;
   const { imageUrl } = body;

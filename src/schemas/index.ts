@@ -1,11 +1,11 @@
 // src/schemas/index.ts
 
 export * from "./user.schema";
-export * from "./userStore.schema";
+// export * from "./userStore.schema"; // removed - using createStore instead
 export * from "./watchHistory.schema";
 export * from "./followlist.schema";
 
-// ✅ Comment schema exports (named, like other modules)
+// âœ… Comment schema exports (named, like other modules)
 export {
   comments,
   commentsRelations,
@@ -14,7 +14,7 @@ export {
   type NewComment,
 } from "./comment.schema";
 
-// ✅ Post schema exports (named)
+// âœ… Post schema exports (named)
 export {
   posts,
   postsRelations,
@@ -32,7 +32,7 @@ export {
   type NewPostCounter,
 } from "./postCounters.schema";
 
-// ✅ createStore - specific exports to avoid conflicts
+// âœ… createStore - specific exports to avoid conflicts
 export {
   createStore,
   storeRatings,
@@ -45,7 +45,7 @@ export {
   type NewStoreRating,
 } from "./store/createStore.schema";
 
-// ✅ NEW carousel (JSONB - 1 table)
+// âœ… NEW carousel (JSONB - 1 table)
 export {
   store_carousel,
   storeCarouselRelations,
@@ -54,7 +54,7 @@ export {
   type NewStoreCarousel,
 } from "./store/store_carousel.schema";
 
-// ✅ OLD carousel (2 tables)
+// âœ… OLD carousel (2 tables)
 export {
   store_carousel_old,
   carousel_items_old,
@@ -69,7 +69,7 @@ export {
 
 
 
-// ✅ Add new product schema!
+// âœ… Add new product schema!
 export {
   store_product,
   storeProductRelations,
@@ -102,11 +102,11 @@ export {
   store_order_item,
   storeOrderRelations,
   storeOrderItemRelations,
-  orderStatusEnum,       // ✅ ADD THIS
-  paymentStatusEnum,     // ✅ ADD THIS
-  paymentMethodEnum,     // ✅ ADD THIS
-  itemStatusEnum,        // ✅ ADD THIS
-  itemPaymentStatusEnum, // ✅ ADD THIS
+  orderStatusEnum,       // âœ… ADD THIS
+  paymentStatusEnum,     // âœ… ADD THIS
+  paymentMethodEnum,     // âœ… ADD THIS
+  itemStatusEnum,        // âœ… ADD THIS
+  itemPaymentStatusEnum, // âœ… ADD THIS
   type StoreOrder,
   type NewStoreOrder,
   type StoreOrderItem,
@@ -126,12 +126,12 @@ export {
 //   type StoreOrderWithItems,
 // } from "./store/store_order.schema";
 // export * from "./user.schema";
-// export * from "./userStore.schema";
+// // export * from "./userStore.schema"; // removed - using createStore instead
 // export * from "./watchHistory.schema";
 // export * from "./followlist.schema";
 
 
-// // ✅ Use specific named exports to avoid conflicts
+// // âœ… Use specific named exports to avoid conflicts
 // export {
 //   createStore,
 //   storeRatings,

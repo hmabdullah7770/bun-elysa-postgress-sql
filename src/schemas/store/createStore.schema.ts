@@ -1,4 +1,4 @@
-// src/db/schema/createStore.schema.ts  ← same name as MongoDB model
+﻿// src/db/schema/createStore.schema.ts  ÃƒÂ¢Ã¢â‚¬Â Ã‚Â same name as MongoDB model
 import {
   pgTable, uuid, varchar, text,
   timestamp, integer, numeric, index
@@ -8,13 +8,13 @@ import { users } from "../user.schema";
 import { eq, and, desc, asc, ilike, sql } from "drizzle-orm";
 
 export const createStore = pgTable("createStore", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   storeName: varchar("store_name", { length: 255 }).notNull().unique(),
   storeLogo: text("store_logo").notNull(),
   category: varchar("category", { length: 255 }),
   ownerId: uuid("owner_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => users._id, { onDelete: "cascade" }),
   clickCount: integer("click_count").default(0).notNull(),
   rating: numeric("rating", { precision: 2, scale: 1 }).default("0").notNull(),
   totalRatings: integer("total_ratings").default(0).notNull(),
@@ -32,22 +32,22 @@ export const createStore = pgTable("createStore", {
 export const createStoreRelations = relations(createStore, ({ one }) => ({
   owner: one(users, {
     fields: [createStore.ownerId],
-    references: [users.id],
+    references: [users._id],
   }),
 }));
 
 
 
 
-// ✅ Added storeRatings table
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Added storeRatings table
 export const storeRatings = pgTable("store_ratings", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   storeId: uuid("store_id")
     .notNull()
-    .references(() => createStore.id, { onDelete: "cascade" }),
+    .references(() => createStore._id, { onDelete: "cascade" }),
   userId: uuid("user_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => users._id, { onDelete: "cascade" }),
   rating: integer("rating").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull()
@@ -56,11 +56,11 @@ export const storeRatings = pgTable("store_ratings", {
   storeUserIdx: index("store_ratings_store_user_idx").on(table.storeId, table.userId),
 }));
 
-// ✅ Relations
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Relations
 export const storesRelations = relations(createStore, ({ one, many }) => ({
   owner: one(users, {
     fields: [createStore.ownerId],
-    references: [users.id],
+    references: [users._id],
   }),
   ratings: many(storeRatings),
 }));
@@ -68,11 +68,11 @@ export const storesRelations = relations(createStore, ({ one, many }) => ({
 export const storeRatingsRelations = relations(storeRatings, ({ one }) => ({
   store: one(createStore, {
     fields: [storeRatings.storeId],
-    references: [createStore.id],
+    references: [createStore._id],
   }),
   user: one(users, {
     fields: [storeRatings.userId],
-    references: [users.id],
+    references: [users._id],
   }),
 }));
 
@@ -82,4 +82,4 @@ export const storeRatingsRelations = relations(storeRatings, ({ one }) => ({
  export type StoreRating = typeof storeRatings.$inferSelect;
 export type NewStoreRating = typeof storeRatings.$inferInsert;
 
-// ✅ Correct type exports
+// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Correct type exports

@@ -1,11 +1,11 @@
-// src/controllers/store/store_order.controller.ts
+﻿// src/controllers/store/store_order.controller.ts
 import { ApiError } from "../../utils/ApiError";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { storeOrderService } from "../../services/store/store_order.service";
 
 export const storeOrderController = {
 
-  // ✅ Create order (Customer)
+  // âœ… Create order (Customer)
   async createOrder(body: any, user: any) {
     const {
       storeId,
@@ -47,7 +47,7 @@ export const storeOrderController = {
     return new ApiResponse(201, order, "Order created successfully");
   },
 
-  // ✅ Get store orders (Store Owner)
+  // âœ… Get store orders (Store Owner)
   async getStoreOrders(
     params: { storeId: string },
     query: { page?: string; limit?: string },
@@ -62,13 +62,13 @@ export const storeOrderController = {
     return new ApiResponse(200, result, "Store orders retrieved successfully");
   },
 
-  // ✅ Get order by ID
+  // âœ… Get order by ID
   async getOrderById(params: { orderId: string }, user: any) {
     const order = await storeOrderService.getOrderById(params.orderId);
     return new ApiResponse(200, order, "Order retrieved successfully");
   },
 
-  // ✅ Update order status (Store Owner)
+  // âœ… Update order status (Store Owner)
   async updateOrderStatus(
     params: { orderId: string },
     body: { orderStatus: string; trackingNumber?: string },
@@ -87,7 +87,7 @@ export const storeOrderController = {
     return new ApiResponse(200, order, "Order status updated successfully");
   },
 
-  // ✅ Get customer orders — all stores (dynamic, optional storeId as query param)
+  // âœ… Get customer orders â€” all stores (dynamic, optional storeId as query param)
   // Mirrors old getCustomerOrders
   async getCustomerOrders(
     query: { page?: string; limit?: string; storeId?: string },
@@ -107,7 +107,7 @@ export const storeOrderController = {
     return new ApiResponse(200, result, message);
   },
 
-  // ✅ Get customer orders from ONE specific store — returns storeInfo
+  // âœ… Get customer orders from ONE specific store â€” returns storeInfo
   // Mirrors old getCustomerOrdersFromOneStore
   async getCustomerOrdersFromOneStore(
     params: { storeId: string },
@@ -128,7 +128,7 @@ export const storeOrderController = {
     );
   },
 
-  // ✅ Cancel order by customer (only pending orders)
+  // âœ… Cancel order by customer (only pending orders)
   async cancelOrderByCustomer(
     params: { orderId: string; storeId: string },
     user: any
@@ -142,7 +142,7 @@ export const storeOrderController = {
     return new ApiResponse(200, order, "Order cancelled successfully");
   },
 
-  // ✅ Delete order by store owner (hard delete)
+  // âœ… Delete order by store owner (hard delete)
   async deleteOrderByOwner(
     params: { orderId: string; storeId: string },
     body: any,
@@ -157,7 +157,7 @@ export const storeOrderController = {
     return new ApiResponse(200, {}, "Order deleted successfully");
   },
 
-  // ✅ Update individual item status (Store Owner)
+  // âœ… Update individual item status (Store Owner)
   async updateItemStatus(
     params: { orderId: string; itemId: string },
     body: { itemStatus?: string; itemPaymentStatus?: string },
@@ -187,7 +187,7 @@ export const storeOrderController = {
 
 // export const storeOrderController = {
 
-//   // ✅ Create order
+//   // âœ… Create order
 //   async createOrder(body: any, user: any) {
 //     const {
 //       storeId,
@@ -236,7 +236,7 @@ export const storeOrderController = {
 //     return new ApiResponse(201, order, "Order created successfully");
 //   },
 
-//   // ✅ Get store orders
+//   // âœ… Get store orders
 //   async getStoreOrders(
 //     params: { storeId: string },
 //     query: { page?: string; limit?: string },
@@ -255,7 +255,7 @@ export const storeOrderController = {
 //     );
 //   },
 
-//   // ✅ Get order by ID
+//   // âœ… Get order by ID
 //   async getOrderById(
 //     params: { orderId: string },
 //     user: any
@@ -265,7 +265,7 @@ export const storeOrderController = {
 //     return new ApiResponse(200, order, "Order retrieved successfully");
 //   },
 
-//   // ✅ Update order status
+//   // âœ… Update order status
 //   async updateOrderStatus(
 //     params: { orderId: string },
 //     body: { orderStatus: string; trackingNumber?: string },
@@ -288,7 +288,7 @@ export const storeOrderController = {
 //     );
 //   },
 
-//   // ✅ Get customer orders
+//   // âœ… Get customer orders
 //   async getCustomerOrders(
 //     query: { page?: string; limit?: string; storeId?: string },
 //     user: any
@@ -307,7 +307,7 @@ export const storeOrderController = {
 //     return new ApiResponse(200, result, message);
 //   },
 
-//   // ✅ Cancel order by customer
+//   // âœ… Cancel order by customer
 //   async cancelOrderByCustomer(
 //     params: { orderId: string; storeId: string },
 //     user: any
@@ -321,7 +321,7 @@ export const storeOrderController = {
 //     return new ApiResponse(200, order, "Order cancelled successfully");
 //   },
 
-//   // ✅ Delete order by owner
+//   // âœ… Delete order by owner
 //   async deleteOrderByOwner(
 //     params: { orderId: string; storeId: string },
 //     user: any,
@@ -336,7 +336,7 @@ export const storeOrderController = {
 //     return new ApiResponse(200, {}, "Order deleted successfully");
 //   },
 
-//   // ✅ Update item status
+//   // âœ… Update item status
 //   async updateItemStatus(
 //     params: { orderId: string; itemId: string },
 //     body: { itemStatus?: string; itemPaymentStatus?: string },

@@ -1,4 +1,4 @@
-// import mongoose, { Schema } from "mongoose";
+﻿// import mongoose, { Schema } from "mongoose";
 // import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 // // import  {Comment}  from "./comment.model.js";
 
@@ -264,7 +264,7 @@
 
 //   bannerSchema.plugin(mongooseAggregatePaginate)
 
-// // ✅ Fix (use actual fields from schema)
+// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Fix (use actual fields from schema)
 // bannerSchema.index({ 
 //     bigheadingText: "text", 
 //     smallheadingText: "text", 

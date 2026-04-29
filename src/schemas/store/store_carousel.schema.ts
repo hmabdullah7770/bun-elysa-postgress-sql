@@ -1,4 +1,4 @@
-
+﻿
 // with jsonB for formate 
 
 
@@ -10,9 +10,9 @@ import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
 
 export type CarouselItem = {
-  id: string;
+  _id: string;
   index: number;
-  images: string;                      // ← single image string
+  images: string;                      // ÃƒÂ¢Ã¢â‚¬Â Ã‚Â single image string
   imageAlt?: string;
   title?: string;
   titleColor?: string;
@@ -38,11 +38,11 @@ export type CarouselItem = {
 };
 
 export const store_carousel = pgTable("store_carousel", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   storeId: uuid("store_id")
     .notNull()
     .unique()
-    .references(() => createStore.id, { onDelete: "cascade" }),
+    .references(() => createStore._id, { onDelete: "cascade" }),
   carousels: jsonb("carousels")
     .$type<CarouselItem[]>()
     .notNull()
@@ -58,7 +58,7 @@ export const storeCarouselRelations = relations(
   store_carousel, ({ one }) => ({
   store: one(createStore, {
     fields: [store_carousel.storeId],
-    references: [createStore.id],
+    references: [createStore._id],
   }),
 }));
 
@@ -82,11 +82,11 @@ export type NewStoreCarousel = typeof store_carousel.$inferInsert;
 // import { createStore } from "./createStore.schema";
 
 // export const store_carousel = pgTable("store_carousel", {
-//   id: uuid("id").defaultRandom().primaryKey(),
+//   _id: uuid("_id").defaultRandom().primaryKey(),
 //   storeId: uuid("store_id")
 //     .notNull()
 //     .unique()
-//     .references(() => createStore.id, { onDelete: "cascade" }),
+//     .references(() => createStore._id, { onDelete: "cascade" }),
 //   createdAt: timestamp("created_at").defaultNow().notNull(),
 //   updatedAt: timestamp("updated_at").defaultNow().notNull()
 //     .$onUpdate(() => new Date()),
@@ -95,10 +95,10 @@ export type NewStoreCarousel = typeof store_carousel.$inferInsert;
 // }));
 
 // export const carousel_items = pgTable("carousel_items", {
-//   id: uuid("id").defaultRandom().primaryKey(),
+//   _id: uuid("_id").defaultRandom().primaryKey(),
 //   storeCarouselId: uuid("store_carousel_id")
 //     .notNull()
-//     .references(() => store_carousel.id, { onDelete: "cascade" }),
+//     .references(() => store_carousel._id, { onDelete: "cascade" }),
 //   index: integer("index").notNull(),
 //   images: text("images").notNull(),
 //   imageAlt: varchar("image_alt", { length: 255 }).default("Banner Background"),
@@ -131,7 +131,7 @@ export type NewStoreCarousel = typeof store_carousel.$inferInsert;
 // export const storeCarouselRelations = relations(store_carousel, ({ one, many }) => ({
 //   store: one(createStore, {
 //     fields: [store_carousel.storeId],
-//     references: [createStore.id],
+//     references: [createStore._id],
 //   }),
 //   carousels: many(carousel_items),
 // }));
@@ -139,7 +139,7 @@ export type NewStoreCarousel = typeof store_carousel.$inferInsert;
 // export const carouselItemsRelations = relations(carousel_items, ({ one }) => ({
 //   storeCarousel: one(store_carousel, {
 //     fields: [carousel_items.storeCarouselId],
-//     references: [store_carousel.id],
+//     references: [store_carousel._id],
 //   }),
 // }));
 

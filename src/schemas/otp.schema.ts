@@ -1,4 +1,4 @@
-// src/db/schema/otp.schema.ts
+﻿// src/db/schema/otp.schema.ts
 import { pgTable, text, varchar, uuid, timestamp, pgEnum } from "drizzle-orm/pg-core";
 
 export const otpPurposeEnum = pgEnum("otp_purpose", [
@@ -7,7 +7,7 @@ export const otpPurposeEnum = pgEnum("otp_purpose", [
 ]);
 
 export const otps = pgTable("otps", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  _id: uuid("_id").defaultRandom().primaryKey(),
   email: varchar("email", { length: 255 }).notNull(),
   otp: text("otp").notNull(),
   purpose: otpPurposeEnum("purpose").notNull(),

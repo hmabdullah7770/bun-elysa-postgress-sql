@@ -1,15 +1,15 @@
-// src/controllers/user.controller.ts
+﻿// src/controllers/user.controller.ts
 import { userService } from "../services/user.service";
 import { ApiResponse } from "../utils/ApiResponse";
 
-// ✅ Let Elysia pass its full context, just destructure what you need
+// âœ… Let Elysia pass its full context, just destructure what you need
 export const getuser = async ({ userVerified }: any) => {
   const user = await userService.getCurrentUser(userVerified._id);
   return new ApiResponse(200, user, "User found successfully");
 };
 
 export const getuserwithId = async ({ params }: any) => {
-  const user = await userService.getUserById(params.id);
+  const user = await userService.getUserById(params._id);
   return new ApiResponse(200, user, "User found successfully");
 };
 

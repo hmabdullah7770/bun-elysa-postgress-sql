@@ -27,8 +27,8 @@ export const authMiddleware = new Elysia({ name: "auth-middleware" }).derive(
 
       return {
         userVerified: {
-          _id: user.id,
-          id: user.id,
+          _id: user._id,
+          // id: user.id,
           email: user.email,
           username: user.username,
           fullName: user.fullName,

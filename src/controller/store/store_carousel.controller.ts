@@ -1,4 +1,4 @@
-
+﻿
 // json b
 
 
@@ -7,14 +7,14 @@ import { ApiResponse } from "../../utils/ApiResponse";
 import { ApiError } from "../../utils/ApiError";
 import { storeCarouselService } from "../../services/store/store_carousel.service";
 
-// ✅ Create carousel
+// âœ… Create carousel
 export const createCarousel = async ({ params, body }: any) => {
   const { storeId } = params;
 
   if (!body.carouselsData) 
     throw new ApiError(400, "carouselsData is required");
 
-  // ✅ Handle both string and parsed object
+  // âœ… Handle both string and parsed object
   let carouselsData;
   try {
     carouselsData = typeof body.carouselsData === "string"
@@ -27,7 +27,7 @@ export const createCarousel = async ({ params, body }: any) => {
   if (!Array.isArray(carouselsData) || carouselsData.length === 0)
     throw new ApiError(400, "carouselsData must be a non-empty array");
 
-  // ✅ Get files by index
+  // âœ… Get files by index
   const filesByIndex: Record<number, any> = {};
   for (let i = 0; i <= 9; i++) {
     const file = body[`carousel_${i}_images`];
@@ -47,7 +47,7 @@ export const createCarousel = async ({ params, body }: any) => {
   );
 };
 
-// ✅ Get store carousels
+// âœ… Get store carousels
 export const getStoreCarousels = async ({ params }: any) => {
   const { storeId } = params;
 
@@ -56,11 +56,11 @@ export const getStoreCarousels = async ({ params }: any) => {
   return new ApiResponse(200, result, "Carousels fetched successfully");
 };
 
-// ✅ Update carousel item
+// âœ… Update carousel item
 export const updateCarousel = async ({ params, body }: any) => {
   const { storeId, carouselId } = params;
 
-  // ✅ Get image file if provided
+  // âœ… Get image file if provided
   const file = body?.carouselImage || null;
 
   const result = await storeCarouselService.updateCarousel(
@@ -73,7 +73,7 @@ export const updateCarousel = async ({ params, body }: any) => {
   return new ApiResponse(200, result, "Carousel updated successfully");
 };
 
-// ✅ Delete carousel item
+// âœ… Delete carousel item
 export const deleteCarousel = async ({ params }: any) => {
   const { storeId, carouselId } = params;
 
@@ -99,18 +99,18 @@ export const deleteCarousel = async ({ params }: any) => {
 //   const { storeId } = params;
 
 
-//   console.log("params:", params); // ← ADD THIS
-//   console.log("storeId:", storeId); // ← ADD THIS
+//   console.log("params:", params); // â† ADD THIS
+//   console.log("storeId:", storeId); // â† ADD THIS
 
 //   if (!body.carouselsData) throw new ApiError(400, "carouselsData is required");
 
-//   // ✅ Handle BOTH cases: already parsed object OR raw string
+//   // âœ… Handle BOTH cases: already parsed object OR raw string
 //   let carouselsData;
 //   try {
 //     carouselsData =
 //       typeof body.carouselsData === "string"
-//         ? JSON.parse(body.carouselsData)  // ← string: parse it
-//         : body.carouselsData;             // ← already object: use directly
+//         ? JSON.parse(body.carouselsData)  // â† string: parse it
+//         : body.carouselsData;             // â† already object: use directly
 //   } catch {
 //     throw new ApiError(400, "Invalid carouselsData JSON");
 //   }

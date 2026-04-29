@@ -1,4 +1,4 @@
-import { ApiResponse } from "../utils/ApiResponse";
+﻿import { ApiResponse } from "../utils/ApiResponse";
 import { postService } from "../services/post.service";
 
 export const getAllPosts = async ({ query, userVerified }: any) => {

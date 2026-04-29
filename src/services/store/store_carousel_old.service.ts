@@ -1,4 +1,4 @@
-// src/services/store/store_carousel_old.service.ts
+﻿// src/services/store/store_carousel_old.service.ts
 import { ApiError } from "../../utils/ApiError";
 import { storeCarouselOldRepository } from "../../repository/store/store_carousel_old.repository";
 import { uploadResult, saveTempFile } from "../../utils/cloudinary";
@@ -80,13 +80,13 @@ class StoreCarouselOldService {
 
     const savedCarousels = newCarousels.length > 0
       ? await storeCarouselOldRepository.createCarouselItems(
-          storeCarouselDoc.id,
+          storeCarouselDoc._id,
           newCarousels
         )
       : [];
 
     return {
-      storeCarouselId: storeCarouselDoc.id,
+      storeCarouselId: storeCarouselDoc._id,
       created: savedCarousels,
       errors,
       totalCreated: savedCarousels.length,
@@ -97,7 +97,7 @@ class StoreCarouselOldService {
   async getStoreCarousels(storeId: string) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
 
-     // ✅ 1. Validate UUID FIRST
+     // âœ… 1. Validate UUID FIRST
   if (!isUUID(storeId)) {
     throw new ApiError(400, "Invalid store ID format");
   }

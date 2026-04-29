@@ -1,4 +1,4 @@
-// src/services/store/store_order.service.ts
+﻿// src/services/store/store_order.service.ts
 import { storeOrderRepository } from "../../repository/store/store_order.repository";
 import { storeProductRepository } from "../../repository/store/store_product.repository";
 import { createstoreRepository } from "../../repository/store/createstore.repository";
@@ -29,7 +29,7 @@ interface CreateOrderInput {
 
 export const storeOrderService = {
 
-  // ✅ Create order
+  // âœ… Create order
   async createOrder(input: CreateOrderInput) {
     const {
       customerId,
@@ -73,10 +73,10 @@ export const storeOrderService = {
       const finalPrice = Number(product.finalPrice ?? product.productPrice);
       totalAmount += finalPrice * item.quantity;
 
-      productIdsToUpdate.push(product.id);
+      productIdsToUpdate.push(product._id);
 
       populatedItems.push({
-        productId: product.id,
+        productId: product._id,
         productName: product.productName,
         productImages: product.productImages,
         quantity: item.quantity,
@@ -120,12 +120,12 @@ export const storeOrderService = {
       populatedItems
     );
 
-    // ✅ Increment ordersalltime for each unique product (mirrors old JS behavior)
+    // âœ… Increment ordersalltime for each unique product (mirrors old JS behavior)
     for (const productId of productIdsToUpdate) {
       await storeProductRepository.incrementOrdersAllTime(productId);
     }
 
-    // ✅ Increment totalSells on the store (mirrors old JS behavior)
+    // âœ… Increment totalSells on the store (mirrors old JS behavior)
     await createstoreRepository.incrementTotalSells(storeId);
 
     // Mark notification sent
@@ -134,7 +134,7 @@ export const storeOrderService = {
     return order;
   },
 
-  // ✅ Get store orders (store owner)
+  // âœ… Get store orders (store owner)
   async getStoreOrders(storeId: string, page: number, limit: number) {
     const store = await createstoreRepository.findById(storeId);
     if (!store) throw new ApiError(404, "Store not found");
@@ -142,21 +142,21 @@ export const storeOrderService = {
     return await storeOrderRepository.findByStoreId(storeId, page, limit);
   },
 
-  // ✅ Get order by ID
+  // âœ… Get order by ID
   async getOrderById(orderId: string) {
     const order = await storeOrderRepository.findById(orderId);
     if (!order) throw new ApiError(404, "Order not found");
     return order;
   },
 
-  // ✅ Get order by ID and store
+  // âœ… Get order by ID and store
   async getOrderByIdAndStore(orderId: string, storeId: string) {
     const order = await storeOrderRepository.findByIdAndStore(orderId, storeId);
     if (!order) throw new ApiError(404, "Order not found");
     return order;
   },
 
-  // ✅ Update order status
+  // âœ… Update order status
   async updateOrderStatus(
     orderId: string,
     orderStatus: StoreOrderItem["itemStatus"],
@@ -171,7 +171,7 @@ export const storeOrderService = {
     return order;
   },
 
-  // ✅ Get customer orders — all stores (with optional storeId filter via query)
+  // âœ… Get customer orders â€” all stores (with optional storeId filter via query)
   // Mirrors old getCustomerOrders dynamic endpoint
   async getCustomerOrders(
     customerId: string,
@@ -187,7 +187,7 @@ export const storeOrderService = {
     return await storeOrderRepository.findByCustomerId(customerId, page, limit, storeId);
   },
 
-  // ✅ Get customer orders from ONE store — returns storeInfo in response
+  // âœ… Get customer orders from ONE store â€” returns storeInfo in response
   // Mirrors old getCustomerOrdersFromOneStore endpoint
   async getCustomerOrdersFromOneStore(
     customerId: string,
@@ -209,14 +209,14 @@ export const storeOrderService = {
       orders: result.orders,
       totalOrders: result.total,
       storeInfo: {
-        storeId: store.id,
+        storeId: store._id,
         storeName: store.storeName,
         storeLogo: store.storeLogo,
       },
     };
   },
 
-  // ✅ Cancel order by customer (only pending orders)
+  // âœ… Cancel order by customer (only pending orders)
   async cancelOrderByCustomer(
     orderId: string,
     storeId: string,
@@ -239,7 +239,7 @@ export const storeOrderService = {
     return cancelled;
   },
 
-  // ✅ Delete order by store owner (hard delete — cascades items)
+  // âœ… Delete order by store owner (hard delete â€” cascades items)
   async deleteOrderByOwner(
     orderId: string,
     storeId: string,
@@ -258,7 +258,7 @@ export const storeOrderService = {
     return deleted;
   },
 
-  // ✅ Update individual item status (store owner only)
+  // âœ… Update individual item status (store owner only)
   async updateItemStatus(
     orderId: string,
     storeId: string,
@@ -341,7 +341,7 @@ export const storeOrderService = {
 
 // export const storeOrderService = {
 
-//   // ✅ Create order
+//   // âœ… Create order
 //   async createOrder(input: CreateOrderInput) {
 //     const {
 //       customerId,
@@ -392,7 +392,7 @@ export const storeOrderService = {
 //       totalAmount += finalPrice * item.quantity;
 
 //       populatedItems.push({
-//         productId: product.id,
+//         productId: product._id,
 //         productName: product.productName,
 //         productImages: product.productImages,
 //         quantity: item.quantity,
@@ -442,7 +442,7 @@ export const storeOrderService = {
 //     return order;
 //   },
 
-//   // ✅ Get store orders
+//   // âœ… Get store orders
 //   async getStoreOrders(
 //     storeId: string,
 //     page: number,
@@ -454,14 +454,14 @@ export const storeOrderService = {
 //     return await storeOrderRepository.findByStoreId(storeId, page, limit);
 //   },
 
-//   // ✅ Get order by ID
+//   // âœ… Get order by ID
 //   async getOrderById(orderId: string) {
 //     const order = await storeOrderRepository.findById(orderId);
 //     if (!order) throw new ApiError(404, "Order not found");
 //     return order;
 //   },
 
-//   // ✅ Get order by ID and store
+//   // âœ… Get order by ID and store
 //   async getOrderByIdAndStore(orderId: string, storeId: string) {
 //     const order = await storeOrderRepository.findByIdAndStore(
 //       orderId,
@@ -471,7 +471,7 @@ export const storeOrderService = {
 //     return order;
 //   },
 
-//   // ✅ Update order status
+//   // âœ… Update order status
 //   async updateOrderStatus(
 //     orderId: string,
 //     orderStatus: StoreOrderItem["itemStatus"],
@@ -486,7 +486,7 @@ export const storeOrderService = {
 //     return order;
 //   },
 
-//   // ✅ Get customer orders
+//   // âœ… Get customer orders
 //   async getCustomerOrders(
 //     customerId: string,
 //     page: number,
@@ -506,7 +506,7 @@ export const storeOrderService = {
 //     );
 //   },
 
-//   // ✅ Cancel order by customer
+//   // âœ… Cancel order by customer
 //   async cancelOrderByCustomer(
 //     orderId: string,
 //     storeId: string,
@@ -533,7 +533,7 @@ export const storeOrderService = {
 //     return cancelled;
 //   },
 
-//   // ✅ Delete order by owner
+//   // âœ… Delete order by owner
 //   async deleteOrderByOwner(
 //     orderId: string,
 //     storeId: string,
@@ -556,7 +556,7 @@ export const storeOrderService = {
 //     return deleted;
 //   },
 
-//   // ✅ Update item status
+//   // âœ… Update item status
 //   async updateItemStatus(
 //     orderId: string,
 //     storeId: string,

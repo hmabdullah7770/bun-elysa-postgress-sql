@@ -1,4 +1,4 @@
-
+﻿
 
 // jsonb 
 
@@ -14,7 +14,7 @@ import { createstoreRepository } from "../../repository/store/createstore.reposi
 
 class StoreCarouselService {
 
-  // ✅ Create carousel
+  // âœ… Create carousel
   async createCarousel(
     storeId: string,
     carouselsData: any[],
@@ -27,7 +27,7 @@ class StoreCarouselService {
     const store = await createstoreRepository.findById(storeId);
     if (!store) throw new ApiError(404, "Store not found");
 
-    // ✅ Upsert store carousel doc
+    // âœ… Upsert store carousel doc
     const storeCarouselDoc = await storeCarouselRepository
       .upsertByStoreId(storeId);
     if (!storeCarouselDoc)
@@ -45,7 +45,7 @@ class StoreCarouselService {
         continue;
       }
 
-      // ✅ Upload image
+      // âœ… Upload image
       const logoPath = await saveTempFile(file);
       const uploaded = await uploadResult(logoPath);
 
@@ -56,7 +56,7 @@ class StoreCarouselService {
 
       newCarousels.push({
         index,
-        images: uploaded.secure_url,   // ← single image string
+        images: uploaded.secure_url,   // â† single image string
         ...(fields.imageAlt && { imageAlt: fields.imageAlt }),
         ...(fields.title && { title: fields.title }),
         ...(fields.titleColor && { titleColor: fields.titleColor }),
@@ -85,7 +85,7 @@ class StoreCarouselService {
       : [];
 
     return {
-      storeCarouselId: storeCarouselDoc.id,
+      storeCarouselId: storeCarouselDoc._id,
       created: savedCarousels,
       errors,
       totalCreated: savedCarousels.length,
@@ -93,7 +93,7 @@ class StoreCarouselService {
     };
   }
 
-  // ✅ Get store carousels
+  // âœ… Get store carousels
   async getStoreCarousels(storeId: string) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
 
@@ -103,7 +103,7 @@ class StoreCarouselService {
     return doc;
   }
 
-  // ✅ Update carousel item
+  // âœ… Update carousel item
   async updateCarousel(
     storeId: string,
     carouselId: string,
@@ -115,7 +115,7 @@ class StoreCarouselService {
 
     const updates: Partial<CarouselItem> = {};
 
-    // ✅ Upload new image if provided
+    // âœ… Upload new image if provided
     if (file) {
       const logoPath = await saveTempFile(file);
       const uploaded = await uploadResult(logoPath);
@@ -124,7 +124,7 @@ class StoreCarouselService {
       updates.images = uploaded.secure_url;
     }
 
-    // ✅ Add other updates
+    // âœ… Add other updates
     if (body.imageAlt !== undefined) updates.imageAlt = body.imageAlt;
     if (body.title !== undefined) updates.title = body.title;
     if (body.titleColor !== undefined) updates.titleColor = body.titleColor;
@@ -152,7 +152,7 @@ class StoreCarouselService {
     return updated;
   }
 
-  // ✅ Delete carousel item
+  // âœ… Delete carousel item
   async deleteCarousel(storeId: string, carouselId: string) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
     if (!carouselId) throw new ApiError(400, "Carousel ID is required");
@@ -201,7 +201,7 @@ export const storeCarouselService = new StoreCarouselService();
 //         continue;
 //       }
 
-//       // ✅ Save to disk first, then upload — same as createstore service
+//       // âœ… Save to disk first, then upload â€” same as createstore service
 //       const logoPath = await saveTempFile(file);
 //       const uploaded = await uploadResult(logoPath);
 
@@ -237,11 +237,11 @@ export const storeCarouselService = new StoreCarouselService();
 //     }
 
 //     const savedCarousels = newCarousels.length > 0
-//       ? await storeCarouselRepository.createCarouselItems(storeCarouselDoc.id, newCarousels)
+//       ? await storeCarouselRepository.createCarouselItems(storeCarouselDoc._id, newCarousels)
 //       : [];
 
 //     return {
-//       storeCarouselId: storeCarouselDoc.id,
+//       storeCarouselId: storeCarouselDoc._id,
 //       created: savedCarousels,
 //       errors,
 //       totalCreated: savedCarousels.length,
@@ -264,7 +264,7 @@ export const storeCarouselService = new StoreCarouselService();
 
 //     let imageUrl: string | undefined;
 //     if (file) {
-//       // ✅ Save to disk first, then upload — same as createstore service
+//       // âœ… Save to disk first, then upload â€” same as createstore service
 //       const logoPath = await saveTempFile(file);
 //       const uploaded = await uploadResult(logoPath);
 //       if (!uploaded?.secure_url) throw new ApiError(500, "Image upload to Cloudinary failed");

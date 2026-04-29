@@ -1,4 +1,4 @@
-// src/repositories/store-order.repository.ts
+﻿// src/repositories/store-order.repository.ts
 import { and, eq, desc, sql, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import {
@@ -13,7 +13,7 @@ import {
 
 export const storeOrderRepository = {
 
-  // ✅ Create order with items (transaction)
+  // Ã¢Å“â€¦ Create order with items (transaction)
   async create(
     orderData: NewStoreOrder,
     itemsData: Omit<NewStoreOrderItem, "orderId">[]
@@ -44,7 +44,7 @@ export const storeOrderRepository = {
     });
   },
 
-  // ✅ Find order by _id with items
+  // Ã¢Å“â€¦ Find order by _id with items
   async findById(_id: string): Promise<StoreOrderWithItems | undefined> {
     const order = await db.query.store_order.findFirst({
       where: eq(store_order._id, _id),
@@ -55,7 +55,7 @@ export const storeOrderRepository = {
     return order;
   },
 
-  // ✅ Find order by _id and storeId with items
+  // Ã¢Å“â€¦ Find order by _id and storeId with items
   async findByIdAndStore(
     _id: string,
     storeId: string
@@ -72,7 +72,7 @@ export const storeOrderRepository = {
     return order;
   },
 
-  // ✅ Get all orders for a store with pagination
+  // Ã¢Å“â€¦ Get all orders for a store with pagination
   async findByStoreId(
     storeId: string,
     page: number,
@@ -104,7 +104,7 @@ export const storeOrderRepository = {
     };
   },
 
-  // ✅ Get customer orders with pagination (all stores or one store)
+  // Ã¢Å“â€¦ Get customer orders with pagination (all createStore or one store)
   async findByCustomerId(
     customerId: string,
     page: number,
@@ -144,7 +144,7 @@ export const storeOrderRepository = {
     };
   },
 
-  // ✅ Update order status
+  // Ã¢Å“â€¦ Update order status
   async updateOrderStatus(
     _id: string,
     orderStatus: StoreOrder["orderStatus"],
@@ -164,7 +164,7 @@ export const storeOrderRepository = {
     return await this.findById(updated._id);
   },
 
-  // ✅ Update individual item status — CLEAN with two tables
+  // Ã¢Å“â€¦ Update individual item status Ã¢â‚¬â€ CLEAN with two tables
   async updateItemStatus(
     itemId: string,
     orderId: string,
@@ -200,7 +200,7 @@ export const storeOrderRepository = {
     return updatedItem;
   },
 
-  // ✅ Cancel order
+  // Ã¢Å“â€¦ Cancel order
   async cancelOrder(
     _id: string
   ): Promise<StoreOrderWithItems | undefined> {
@@ -220,7 +220,7 @@ export const storeOrderRepository = {
     return await this.findById(updated._id);
   },
 
-  // ✅ Hard delete order (cascade deletes items automatically)
+  // Ã¢Å“â€¦ Hard delete order (cascade deletes items automatically)
   async deleteOrder(
     _id: string,
     storeId: string
@@ -238,7 +238,7 @@ export const storeOrderRepository = {
     return result.length > 0;
   },
 
-  // ✅ Mark notification sent
+  // Ã¢Å“â€¦ Mark notification sent
   async markNotified(_id: string): Promise<void> {
     await db
       .update(store_order)
@@ -266,7 +266,7 @@ export const storeOrderRepository = {
 
 // export const storeOrderRepository = {
 
-//   // ✅ Create order with items (transaction)
+//   // Ã¢Å“â€¦ Create order with items (transaction)
 //   async create(
 //     orderData: NewStoreOrder,
 //     itemsData: Omit<NewStoreOrderItem, "orderId">[]
@@ -297,7 +297,7 @@ export const storeOrderRepository = {
 //     });
 //   },
 
-//   // ✅ Find order by _id with items
+//   // Ã¢Å“â€¦ Find order by _id with items
 //   async findById(_id: string): Promise<StoreOrderWithItems | undefined> {
 //     const order = await db.query.store_order.findFirst({
 //       where: eq(store_order._id, _id),
@@ -308,7 +308,7 @@ export const storeOrderRepository = {
 //     return order;
 //   },
 
-//   // ✅ Find order by _id and storeId with items
+//   // Ã¢Å“â€¦ Find order by _id and storeId with items
 //   async findByIdAndStore(
 //     _id: string,
 //     storeId: string
@@ -325,7 +325,7 @@ export const storeOrderRepository = {
 //     return order;
 //   },
 
-//   // ✅ Get all orders for a store with pagination
+//   // Ã¢Å“â€¦ Get all orders for a store with pagination
 //   async findByStoreId(
 //     storeId: string,
 //     page: number,
@@ -357,7 +357,7 @@ export const storeOrderRepository = {
 //     };
 //   },
 
-//   // ✅ Get customer orders with pagination (all stores or one store)
+//   // Ã¢Å“â€¦ Get customer orders with pagination (all createStore or one store)
 //   async findByCustomerId(
 //     customerId: string,
 //     page: number,
@@ -397,7 +397,7 @@ export const storeOrderRepository = {
 //     };
 //   },
 
-//   // ✅ Update order status
+//   // Ã¢Å“â€¦ Update order status
 //   async updateOrderStatus(
 //     _id: string,
 //     orderStatus: StoreOrder["orderStatus"],
@@ -417,7 +417,7 @@ export const storeOrderRepository = {
 //     return await this.findById(updated._id);
 //   },
 
-//   // ✅ Update individual item status — CLEAN with two tables
+//   // Ã¢Å“â€¦ Update individual item status Ã¢â‚¬â€ CLEAN with two tables
 //   async updateItemStatus(
 //     itemId: string,
 //     orderId: string,
@@ -453,7 +453,7 @@ export const storeOrderRepository = {
 //     return updatedItem;
 //   },
 
-//   // ✅ Cancel order
+//   // Ã¢Å“â€¦ Cancel order
 //   async cancelOrder(
 //     _id: string
 //   ): Promise<StoreOrderWithItems | undefined> {
@@ -473,7 +473,7 @@ export const storeOrderRepository = {
 //     return await this.findById(updated._id);
 //   },
 
-//   // ✅ Hard delete order (cascade deletes items automatically)
+//   // Ã¢Å“â€¦ Hard delete order (cascade deletes items automatically)
 //   async deleteOrder(
 //     _id: string,
 //     storeId: string
@@ -491,7 +491,7 @@ export const storeOrderRepository = {
 //     return result.length > 0;
 //   },
 
-//   // ✅ Mark notification sent
+//   // Ã¢Å“â€¦ Mark notification sent
 //   async markNotified(_id: string): Promise<void> {
 //     await db
 //       .update(store_order)

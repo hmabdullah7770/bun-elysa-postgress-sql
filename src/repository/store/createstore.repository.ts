@@ -1,4 +1,4 @@
-// src/repositories/store.repository.ts
+﻿// src/repositories/store.repository.ts
 import { eq, desc, sql, avg, count } from "drizzle-orm";
 import { db } from "../../db/index";
 import {createStore, storeRatings, type NewCreateStore, type CreateStore } from "../../schemas/store/createStore.schema";
@@ -19,7 +19,7 @@ export class CreateStoreRepository {
     return store || null;
   }
 
-  // ✅ Increment total sells counter
+  // Ã¢Å“â€¦ Increment total sells counter
 async incrementTotalSells(id: string): Promise<void> {
   await db
     .update(createStore)
@@ -27,7 +27,7 @@ async incrementTotalSells(id: string): Promise<void> {
       totalSells: sql`${createStore.totalSells} + 1`,
       updatedAt: new Date(),
     })
-    .where(eq(createStore.id, id));
+    .where(eq(createStore._id, id));
 }
 
   // Find store by ID
@@ -35,7 +35,7 @@ async incrementTotalSells(id: string): Promise<void> {
     const [store] = await db
       .select()
       .from(createStore)
-      .where(eq(createStore.id, id))
+      .where(eq(createStore._id, id))
       .limit(1);
 
     
@@ -46,7 +46,7 @@ async incrementTotalSells(id: string): Promise<void> {
   async findByIdWithOwner(id: string) {
     const [store] = await db
       .select({
-        id: createStore.id,
+        _id: createStore._id,
         storeName: createStore.storeName,
         storeLogo: createStore.storeLogo,
         category: createStore.category,
@@ -58,15 +58,15 @@ async incrementTotalSells(id: string): Promise<void> {
         createdAt: createStore.createdAt,
         updatedAt: createStore.updatedAt,
         owner: {
-          id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(createStore)
-      .leftJoin(users, eq(createStore.ownerId, users.id))
-      .where(eq(createStore.id, id))
+      .leftJoin(users, eq(createStore.ownerId, users._id))
+      .where(eq(createStore._id, id))
       .limit(1);
     return store || null;
   }
@@ -95,26 +95,26 @@ async incrementTotalSells(id: string): Promise<void> {
  async findAllByOwner(ownerId: string) {
     return await db
       .select({
-        _id: createStore.id,              // ✅ id → _id
+        _id: createStore._id,              // Ã¢Å“â€¦ id Ã¢â€ â€™ _id
         storeName: createStore.storeName,
         storeLogo: createStore.storeLogo,
         category: createStore.category,
-        owner: createStore.ownerId,        // ✅ ownerId → owner (string)
+        owner: createStore.ownerId,        // Ã¢Å“â€¦ ownerId Ã¢â€ â€™ owner (string)
         clickCount: createStore.clickCount,
         rating: createStore.rating,
         totalRatings: createStore.totalRatings,
         totalSells: createStore.totalSells,
         createdAt: createStore.createdAt,
         updatedAt: createStore.updatedAt,
-        ownerDetails: {                    // ✅ owner → ownerDetails
-          _id: users.id,                  // ✅ id → _id
+        ownerDetails: {                    // Ã¢Å“â€¦ owner Ã¢â€ â€™ ownerDetails
+          _id: users._id,                  // Ã¢Å“â€¦ id Ã¢â€ â€™ _id
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(createStore)
-      .leftJoin(users, eq(createStore.ownerId, users.id))
+      .leftJoin(users, eq(createStore.ownerId, users._id))
       .where(eq(createStore.ownerId, ownerId));
   }
   // Update store
@@ -122,7 +122,7 @@ async incrementTotalSells(id: string): Promise<void> {
     const [store] = await db
       .update(createStore)
       .set({ ...data, updatedAt: new Date() })
-      .where(eq(createStore.id, id))
+      .where(eq(createStore._id, id))
       .returning();
     return store || null;
   }
@@ -131,8 +131,8 @@ async incrementTotalSells(id: string): Promise<void> {
   async delete(id: string): Promise<boolean> {
     const result = await db
       .delete(createStore)
-      .where(eq(createStore.id, id))
-      .returning({ id: createStore.id });
+      .where(eq(createStore._id, id))
+      .returning({ _id: createStore._id });
     return result.length > 0;
   }
 
@@ -146,7 +146,7 @@ async incrementTotalSells(id: string): Promise<void> {
         clickCount: sql`${createStore.clickCount} + 1`,
         updatedAt: new Date(),
       })
-      .where(eq(createStore.id, id));
+      .where(eq(createStore._id, id));
   }
 
   // ==================== RATING ====================
@@ -164,7 +164,7 @@ async incrementTotalSells(id: string): Promise<void> {
         totalRatings,
         updatedAt: new Date(),
       })
-      .where(eq(createStore.id, storeId));
+      .where(eq(createStore._id, storeId));
   }
 
   // ==================== TOP RATED ====================
@@ -186,7 +186,7 @@ async incrementTotalSells(id: string): Promise<void> {
     // Get data
     const data = await db
       .select({
-        id: createStore.id,
+        _id: createStore._id,
         storeName: createStore.storeName,
         storeLogo: createStore.storeLogo,
         category: createStore.category,
@@ -198,14 +198,14 @@ async incrementTotalSells(id: string): Promise<void> {
         createdAt: createStore.createdAt,
         updatedAt: createStore.updatedAt,
         owner: {
-          id: users.id,
+          _id: users._id,
           username: users.username,
           fullName: users.fullName,
           avatar: users.avatar,
         },
       })
       .from(createStore)
-      .leftJoin(users, eq(createStore.ownerId, users.id))
+      .leftJoin(users, eq(createStore.ownerId, users._id))
       .where(whereCondition)
       .orderBy(desc(createStore.rating), desc(createStore.totalRatings), desc(createStore.createdAt))
       .limit(limit)
@@ -254,7 +254,7 @@ export class StoreRatingRepository {
           rating: data.rating,
           updatedAt: new Date(),
         })
-        .where(eq(storeRatings.id, existing.id))
+        .where(eq(storeRatings._id, existing._id))
         .returning();
       return updated;
     }
@@ -286,7 +286,7 @@ export class StoreRatingRepository {
     const [result] = await db
       .select({
         average: avg(storeRatings.rating),
-        total: count(storeRatings.id),
+        total: count(storeRatings._id),
       })
       .from(storeRatings)
       .where(eq(storeRatings.storeId, storeId));
@@ -303,12 +303,12 @@ export class StoreRatingRepository {
 
     const data = await db
       .select({
-        id: storeRatings.id,
+        _id: storeRatings._id,
         rating: storeRatings.rating,
         createdAt: storeRatings.createdAt,
         updatedAt: storeRatings.updatedAt,
         store: {
-          id: createStore.id,
+          _id: createStore._id,
           storeName: createStore.storeName,
           storeLogo: createStore.storeLogo,
           category: createStore.category,
@@ -317,7 +317,7 @@ export class StoreRatingRepository {
         },
       })
       .from(storeRatings)
-      .leftJoin(createStore, eq(storeRatings.storeId, createStore.id))
+      .leftJoin(createStore, eq(storeRatings.storeId, createStore._id))
       .where(eq(storeRatings.userId, userId))
       .orderBy(desc(storeRatings.createdAt))
       .limit(limit)
@@ -348,8 +348,8 @@ export class StoreRatingRepository {
   async delete(id: string): Promise<boolean> {
     const result = await db
       .delete(storeRatings)
-      .where(eq(storeRatings.id, id))
-      .returning({ id: storeRatings.id });
+      .where(eq(storeRatings._id, id))
+      .returning({ _id: storeRatings._id });
     return result.length > 0;
   }
 }

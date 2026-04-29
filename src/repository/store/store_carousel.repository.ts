@@ -1,4 +1,4 @@
-
+﻿
 // JSONB
 
 
@@ -11,7 +11,7 @@ import { ApiError } from "../../utils/ApiError";
 
 class StoreCarouselRepository {
 
-  // ✅ Find by storeId - 1 DB call!
+  // Ã¢Å“â€¦ Find by storeId - 1 DB call!
   async findByStoreId(storeId: string) {
     const [doc] = await db
       .select()
@@ -21,7 +21,7 @@ class StoreCarouselRepository {
     return doc || null;
   }
 
-  // ✅ Upsert
+  // Ã¢Å“â€¦ Upsert
   async upsertByStoreId(storeId: string) {
     const existing = await db
       .select()
@@ -39,7 +39,7 @@ class StoreCarouselRepository {
     return created;
   }
 
-  // ✅ Create carousel items
+  // Ã¢Å“â€¦ Create carousel items
   async createCarouselItems(
     storeId: string,
     newItems: Omit<CarouselItem, "id" | "createdAt" | "updatedAt">[]
@@ -65,13 +65,13 @@ class StoreCarouselRepository {
     return itemsWithId;
   }
 
-  // ✅ Update single carousel item by id
+  // Ã¢Å“â€¦ Update single carousel item by id
   async updateCarouselItem(
     storeId: string,
     carouselId: string,
     updates: Partial<Omit<CarouselItem, "id" | "createdAt">>
   ) {
-    // ✅ Check store exists first
+    // Ã¢Å“â€¦ Check store exists first
     const existing = await db
       .select()
       .from(store_carousel)
@@ -80,12 +80,12 @@ class StoreCarouselRepository {
 
     if (!existing[0]) throw new ApiError(404, "Store carousel not found");
 
-    // ✅ Check item exists
+    // Ã¢Å“â€¦ Check item exists
     const carousels = existing[0].carousels as CarouselItem[];
-    const itemExists = carousels.find(c => c.id === carouselId);
+    const itemExists = carousels.find(c => c._id === carouselId);
     if (!itemExists) throw new ApiError(404, "Carousel item not found");
 
-    // ✅ Update specific item in JSONB array
+    // Ã¢Å“â€¦ Update specific item in JSONB array
     const updatePayload = {
       ...updates,
       updatedAt: new Date().toISOString(),
@@ -109,15 +109,15 @@ class StoreCarouselRepository {
       .where(eq(store_carousel.storeId, storeId))
       .returning();
 
-    // ✅ Return updated item only
+    // Ã¢Å“â€¦ Return updated item only
     if (!updated) throw new ApiError(500, "Failed to update carousel");
     const updatedCarousels = updated.carousels as CarouselItem[];
-    return updatedCarousels.find(c => c.id === carouselId);
+    return updatedCarousels.find(c => c._id === carouselId);
   }
 
-  // ✅ Delete single carousel item
+  // Ã¢Å“â€¦ Delete single carousel item
   async deleteCarouselItem(storeId: string, carouselId: string) {
-    // ✅ Check exists first
+    // Ã¢Å“â€¦ Check exists first
     const existing = await db
       .select()
       .from(store_carousel)
@@ -127,10 +127,10 @@ class StoreCarouselRepository {
     if (!existing[0]) throw new ApiError(404, "Store carousel not found");
 
     const carousels = existing[0].carousels as CarouselItem[];
-    const itemExists = carousels.find(c => c.id === carouselId);
+    const itemExists = carousels.find(c => c._id === carouselId);
     if (!itemExists) throw new ApiError(404, "Carousel item not found");
 
-    // ✅ Remove item from array
+    // Ã¢Å“â€¦ Remove item from array
     const [updated] = await db
       .update(store_carousel)
       .set({
@@ -147,7 +147,7 @@ class StoreCarouselRepository {
     return updated;
   }
 
-  // ✅ Get single carousel item
+  // Ã¢Å“â€¦ Get single carousel item
   async findCarouselItemById(storeId: string, carouselId: string) {
     const [doc] = await db
       .select()
@@ -158,7 +158,7 @@ class StoreCarouselRepository {
     if (!doc) throw new ApiError(404, "Store carousel not found");
 
     const carousels = doc.carousels as CarouselItem[];
-    const item = carousels.find(c => c.id === carouselId);
+    const item = carousels.find(c => c._id === carouselId);
     if (!item) throw new ApiError(404, "Carousel item not found");
 
     return item;
@@ -178,7 +178,7 @@ export const storeCarouselRepository = new StoreCarouselRepository();
 
 // class StoreCarouselRepository {
 
-//   // Upsert store_carousel doc — same as MongoDB findOneAndUpdate with upsert:true
+//   // Upsert store_carousel doc Ã¢â‚¬â€ same as MongoDB findOneAndUpdate with upsert:true
 //   async upsertByStoreId(storeId: string) {
     
 //       console.log("upsertByStoreId called with storeId:", storeId);
@@ -236,7 +236,7 @@ export const storeCarouselRepository = new StoreCarouselRepository();
 //     const item = await db
 //       .select()
 //       .from(carousel_items)
-//       .where(eq(carousel_items.id, carouselId))
+//       .where(eq(carousel_items._id, carouselId))
 //       .limit(1);
 
 //     return item[0] || null;
@@ -246,7 +246,7 @@ export const storeCarouselRepository = new StoreCarouselRepository();
 //     const updated = await db
 //       .update(carousel_items)
 //       .set({ ...fields, updatedAt: new Date() })
-//       .where(eq(carousel_items.id, carouselId))
+//       .where(eq(carousel_items._id, carouselId))
 //       .returning();
 
 //     return updated[0];
@@ -255,7 +255,7 @@ export const storeCarouselRepository = new StoreCarouselRepository();
 //   async deleteCarouselItem(carouselId: string) {
 //     return await db
 //       .delete(carousel_items)
-//       .where(eq(carousel_items.id, carouselId));
+//       .where(eq(carousel_items._id, carouselId));
 //   }
 // }
 
