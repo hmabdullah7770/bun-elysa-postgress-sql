@@ -4,7 +4,7 @@ import {
   integer, boolean, timestamp, index,
   uniqueIndex, jsonb
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
 
 // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ ProductColor type
@@ -67,13 +67,13 @@ export const store_product = pgTable("store_product", {
   categoryIdx: index("store_product_category_idx").on(table.category),
 }));
 
-export const storeProductRelations = relations(
-  store_product, ({ one }) => ({
-  store: one(createStore, {
-    fields: [store_product.storeId],
-    references: [createStore._id],
-  }),
-}));
+// export const storeProductRelations = relations(
+//   store_product, ({ one }) => ({
+//   store: one(createStore, {
+//     fields: [store_product.storeId],
+//     references: [createStore._id],
+//   }),
+// }));
 
 export type StoreProduct = typeof store_product.$inferSelect;
 export type NewStoreProduct = typeof store_product.$inferInsert;

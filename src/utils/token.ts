@@ -1,9 +1,10 @@
 // src/utils/token.ts
 import jwt from "jsonwebtoken";
+// import type { User } from "../schemas/user.schema";
 
 // ─── Types ──────────────────────────────────────────────────────
 interface TokenUser {
-  id: string;
+  _id: string;
   email: string;
   fullName: string | null;
   username: string;
@@ -25,7 +26,7 @@ interface RefreshTokenPayload {
 export const generateAccessToken = (user: TokenUser): string => {
   return jwt.sign(
     {
-      _id: user.id,
+      _id: user._id,
       email: user.email,
       fullname: user.fullName,
       username: user.username,
@@ -42,7 +43,7 @@ export const generateAccessToken = (user: TokenUser): string => {
 export const generateRefreshToken = (user: TokenUser): string => {
   return jwt.sign(
     {
-      _id: user.id,
+      _id: user._id,
     } as RefreshTokenPayload,
     process.env.REFRESH_TOKEN_SECRET!,
     {

@@ -10,7 +10,7 @@ import {
    uuid,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
 
 export const store_cart = pgTable("store_cart", {
   _id: bigserial("_id", { mode: "number" }).primaryKey(),
@@ -54,17 +54,19 @@ export const store_cart_item = pgTable("store_cart_item", {
   productIdx: index("store_cart_item_product_idx").on(table.productId),
 }));
 
-// Relations
-export const storeCartRelations = relations(store_cart, ({ many }) => ({
-  items: many(store_cart_item),
-}));
 
-export const storeCartItemRelations = relations(store_cart_item, ({ one }) => ({
-  cart: one(store_cart, {
-    fields: [store_cart_item.storeCartId],
-    references: [store_cart._id],
-  }),
-}));
+// relation commented
+// Relations
+// export const storeCartRelations = relations(store_cart, ({ many }) => ({
+//   items: many(store_cart_item),
+// }));
+// relation commented
+// export const storeCartItemRelations = relations(store_cart_item, ({ one }) => ({
+//   cart: one(store_cart, {
+//     fields: [store_cart_item.storeCartId],
+//     references: [store_cart._id],
+//   }),
+// }));
 
 // Types
 export type StoreCart = typeof store_cart.$inferSelect;

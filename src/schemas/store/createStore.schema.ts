@@ -3,9 +3,10 @@ import {
   pgTable, uuid, varchar, text,
   timestamp, integer, numeric, index
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
 import { users } from "../user.schema";
 import { eq, and, desc, asc, ilike, sql } from "drizzle-orm";
+// import { store_order } from "./store_order.schema";
 
 export const createStore = pgTable("createStore", {
   _id: uuid("_id").defaultRandom().primaryKey(),
@@ -28,18 +29,20 @@ export const createStore = pgTable("createStore", {
   categoryIdx: index("createStore_category_idx").on(table.category),
   ratingIdx: index("createStore_rating_idx").on(table.rating),
 }));
-
-export const createStoreRelations = relations(createStore, ({ one }) => ({
-  owner: one(users, {
-    fields: [createStore.ownerId],
-    references: [users._id],
-  }),
-}));
+ // relation commented
+// export const createStoreRelations = relations(createStore, ({ one }) => ({
+//   owner: one(users, {
+//     fields: [createStore.ownerId],
+//     references: [users._id],
+//   }),
+// }));
 
 
 
 
 // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Added storeRatings table
+
+
 export const storeRatings = pgTable("store_ratings", {
   _id: uuid("_id").defaultRandom().primaryKey(),
   storeId: uuid("store_id")
@@ -56,25 +59,27 @@ export const storeRatings = pgTable("store_ratings", {
   storeUserIdx: index("store_ratings_store_user_idx").on(table.storeId, table.userId),
 }));
 
-// ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Relations
-export const storesRelations = relations(createStore, ({ one, many }) => ({
-  owner: one(users, {
-    fields: [createStore.ownerId],
-    references: [users._id],
-  }),
-  ratings: many(storeRatings),
-}));
+// relation commented
+// export const storesRelations = relations(createStore, ({ one, many }) => ({
+//   owner: one(users, {
+//     fields: [createStore.ownerId],
+//     references: [users._id],
+//   }),
+//   ratings: many(storeRatings),
+//   orders: many(store_order),
+// }));
 
-export const storeRatingsRelations = relations(storeRatings, ({ one }) => ({
-  store: one(createStore, {
-    fields: [storeRatings.storeId],
-    references: [createStore._id],
-  }),
-  user: one(users, {
-    fields: [storeRatings.userId],
-    references: [users._id],
-  }),
-}));
+// relation commented
+// export const storeRatingsRelations = relations(storeRatings, ({ one }) => ({
+//   store: one(createStore, {
+//     fields: [storeRatings.storeId],
+//     references: [createStore._id],
+//   }),
+//   user: one(users, {
+//     fields: [storeRatings.userId],
+//     references: [users._id],
+//   }),
+// }));
 
  export type CreateStore = typeof createStore.$inferSelect;
  export type NewCreateStore = typeof createStore.$inferInsert;

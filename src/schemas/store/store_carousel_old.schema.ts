@@ -3,7 +3,7 @@ import {
   pgTable, uuid, varchar, text, boolean,
   integer, timestamp, index
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
 
 export const store_carousel_old = pgTable("store_carousel_old", {
@@ -53,23 +53,24 @@ export const carousel_items_old = pgTable("carousel_items_old", {
   storeCarouselIdx: index("carousel_items_old_store_carousel_idx")
     .on(table.storeCarouselId),
 }));
+// relation commented
+// export const storeCarouselOldRelations = relations(
+//   store_carousel_old, ({ one, many }) => ({
+//   store: one(createStore, {
+//     fields: [store_carousel_old.storeId],
+//     references: [createStore._id],
+//   }),
+//   carousels: many(carousel_items_old),
+// }));
 
-export const storeCarouselOldRelations = relations(
-  store_carousel_old, ({ one, many }) => ({
-  store: one(createStore, {
-    fields: [store_carousel_old.storeId],
-    references: [createStore._id],
-  }),
-  carousels: many(carousel_items_old),
-}));
-
-export const carouselItemsOldRelations = relations(
-  carousel_items_old, ({ one }) => ({
-  storeCarousel: one(store_carousel_old, {
-    fields: [carousel_items_old.storeCarouselId],
-    references: [store_carousel_old._id],
-  }),
-}));
+// relation commented
+// export const carouselItemsOldRelations = relations(
+//   carousel_items_old, ({ one }) => ({
+//   storeCarousel: one(store_carousel_old, {
+//     fields: [carousel_items_old.storeCarouselId],
+//     references: [store_carousel_old._id],
+//   }),
+// }));
 
 export type StoreCarouselOld = typeof store_carousel_old.$inferSelect;
 export type NewStoreCarouselOld = typeof store_carousel_old.$inferInsert;

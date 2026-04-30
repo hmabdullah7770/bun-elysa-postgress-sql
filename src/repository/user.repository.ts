@@ -57,14 +57,72 @@ export class UserRepository {
     return result[0];
   }
 
+  // async findByIdSafe(id: string) {
+  //   const result = await db
+  //     .select(safeUserColumns)
+  //     .from(users)
+  //     .where(eq(users._id, id))
+  //     .limit(1);
+  //   return result[0];
+  // }
+
+
   async findByIdSafe(id: string) {
-    const result = await db
-      .select(safeUserColumns)
-      .from(users)
-      .where(eq(users._id, id))
-      .limit(1);
-    return result[0];
-  }
+  const result = await db
+    .select({
+      // spread all safe user columns
+      ...safeUserColumns,
+      // aggregate stores as JSON array
+      stores: sql<
+        {
+          storeId: string;
+          storeName: string;
+          storeLogo: string;
+          category: string | null;
+        }[]
+      >`
+        COALESCE(
+          JSON_AGG(
+            JSON_BUILD_OBJECT(
+              'storeId', ${createStore._id},
+              'storeName', ${createStore.storeName},
+              'storeLogo', ${createStore.storeLogo},
+              'category',  ${createStore.category}
+            )
+          ) FILTER (WHERE ${createStore._id} IS NOT NULL),
+          '[]'
+        )
+      `,
+    })
+    .from(users)
+    .leftJoin(createStore, eq(createStore.ownerId, users._id))
+    .where(eq(users._id, id))
+    .groupBy(
+      // group by all safe user columns so aggregation works
+      users._id,
+      users.username,
+      users.email,
+      users.fullName,
+      users.bio,
+      users.gender,
+      users.avatar,
+      users.coverImage,
+      users.whatsapp,
+      users.storeLink,
+      users.facebook,
+      users.instagram,
+      users.productlink,
+      users.createdAt,
+      users.updatedAt
+      // add any other columns that exist in safeUserColumns
+    )
+    .limit(1);
+
+  return result[0];
+}
+
+
+
 
   async findByEmail(email: string): Promise<User | undefined> {
     const result = await db

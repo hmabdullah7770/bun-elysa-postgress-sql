@@ -1,0 +1,3 @@
+ALTER TABLE "store_order" ADD CONSTRAINT "store_order_customer_id_users__id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."users"("_id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "store_order" ADD CONSTRAINT "store_order_store_id_createStore__id_fk" FOREIGN KEY ("store_id") REFERENCES "public"."createStore"("_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "store_order" ADD CONSTRAINT "store_order_store_owner_id_users__id_fk" FOREIGN KEY ("store_owner_id") REFERENCES "public"."users"("_id") ON DELETE restrict ON UPDATE no action;

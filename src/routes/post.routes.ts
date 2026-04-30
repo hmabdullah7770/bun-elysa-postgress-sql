@@ -12,7 +12,7 @@ import {
 } from "../controller/post.controller";
 import { progressStore } from "../utils/progressStore";
 
-const postRoutes = new Elysia({ prefix: "/api/v1/posts" })
+const postRoutes = new Elysia({ prefix: "/api/v1/post" })
   .use(authMiddleware
 
   // SSE progress

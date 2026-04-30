@@ -8,7 +8,7 @@ import {
   verifyRefreshToken,
 } from "../utils/token";
 import { uploadResult, saveTempFile} from "../utils/cloudinary";
-import type { User } from "../schemas/user.schema";
+// import type { User } from "../schemas";
 
 export class AuthService {
   // â”€â”€â”€ Token Generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

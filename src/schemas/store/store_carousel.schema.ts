@@ -6,7 +6,7 @@
 import {
   pgTable, uuid, timestamp, index, jsonb
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
 
 export type CarouselItem = {
@@ -54,13 +54,13 @@ export const store_carousel = pgTable("store_carousel", {
   storeIdx: index("store_carousel_store_idx").on(table.storeId),
 }));
 
-export const storeCarouselRelations = relations(
-  store_carousel, ({ one }) => ({
-  store: one(createStore, {
-    fields: [store_carousel.storeId],
-    references: [createStore._id],
-  }),
-}));
+// export const storeCarouselRelations = relations(
+//   store_carousel, ({ one }) => ({
+//   store: one(createStore, {
+//     fields: [store_carousel.storeId],
+//     references: [createStore._id],
+//   }),
+// }));
 
 export type StoreCarousel = typeof store_carousel.$inferSelect;
 export type NewStoreCarousel = typeof store_carousel.$inferInsert;

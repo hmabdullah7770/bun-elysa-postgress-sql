@@ -8,7 +8,8 @@ import {
   pgEnum,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
+// import { store_order } from "./store/store_order.schema";
 
 export const genderEnum = pgEnum("gender", [
   "male",
@@ -49,12 +50,20 @@ export const users = pgTable(
   }
 );
 
-export const usersRelations = relations(users, ({ many }) => ({
-  stores: many(createStore),
-  watchHistory: many(watchHistory),
-  followers: many(followLists, { relationName: "followers" }),
-  following: many(followLists, { relationName: "following" }),
-}));
+// relation commented
+// export const usersRelations = relations(users, ({ many }) => ({
+//   stores: many(createStore),
+
+//     // ✅ orders where this user is the customer
+//   ordersAsCustomer: many(store_order, { relationName: "customer_orders" }),
+
+//   // ✅ orders where this user is the store owner
+//   ordersAsOwner: many(store_order, { relationName: "owned_store_orders" }),
+
+//   watchHistory: many(watchHistory),
+//   followers: many(followLists, { relationName: "followers" }),
+//   following: many(followLists, { relationName: "following" }),
+// }));
 
 // Forward references - these are imported from their respective files
 // but defined here for relation setup

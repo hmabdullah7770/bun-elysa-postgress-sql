@@ -31,8 +31,9 @@ const app = new Elysia()
         JSON.stringify({
           success: response.success,
           statusCode: response.statusCode,
-          message: response.message,
-          data: response.data,
+           data: response.data,
+          messege: response.messege,
+         
         }),
         {
           headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 ﻿// src/db/schema/watchHistory.schema.ts
 import { pgTable, uuid, timestamp } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+// import { relations } from "drizzle-orm";
 import { users } from "./user.schema";
 
 export const watchHistory = pgTable("watch_history", {
@@ -13,11 +13,13 @@ export const watchHistory = pgTable("watch_history", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const watchHistoryRelations = relations(watchHistory, ({ one }) => ({
-  user: one(users, {
-    fields: [watchHistory.userId],
-    references: [users._id],
-  }),
-}));
+
+// relation commented
+// export const watchHistoryRelations = relations(watchHistory, ({ one }) => ({
+//   user: one(users, {
+//     fields: [watchHistory.userId],
+//     references: [users._id],
+//   }),
+// }));
 
 export type WatchHistory = typeof watchHistory.$inferSelect;

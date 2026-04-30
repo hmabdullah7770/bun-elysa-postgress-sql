@@ -85,7 +85,7 @@ export const loginUser = async ({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
     },
-    "User logged in successfully"
+    { message: "User logged in successfully" }
   );
 };
 

@@ -12,7 +12,8 @@
   numeric,
   bigint,
 } from "drizzle-orm/pg-core";
-import { relations, sql } from "drizzle-orm";
+// import { relations, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { users } from "./user.schema";
 
 export type PostStoreItem = {
@@ -144,12 +145,13 @@ export const posts = pgTable(
   })
 );
 
-export const postsRelations = relations(posts, ({ one }) => ({
-  ownerUser: one(users, {
-    fields: [posts.owner],
-    references: [users._id],
-  }),
-}));
+// relation commented
+// export const postsRelations = relations(posts, ({ one }) => ({
+//   ownerUser: one(users, {
+//     fields: [posts.owner],
+//     references: [users._id],
+//   }),
+// }));
 
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;

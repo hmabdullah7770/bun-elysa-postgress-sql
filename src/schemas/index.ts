@@ -1,5 +1,5 @@
 // src/schemas/index.ts
-
+ export * from "./relations"; 
 export * from "./user.schema";
 // export * from "./userStore.schema"; // removed - using createStore instead
 export * from "./watchHistory.schema";
@@ -8,7 +8,7 @@ export * from "./followlist.schema";
 // âœ… Comment schema exports (named, like other modules)
 export {
   comments,
-  commentsRelations,
+  // commentsRelations,
   commentTypeEnum,
   type Comment,
   type NewComment,
@@ -17,7 +17,7 @@ export {
 // âœ… Post schema exports (named)
 export {
   posts,
-  postsRelations,
+  // postsRelations,
   type Post,
   type NewPost,
   type PostStoreItem,
@@ -36,9 +36,9 @@ export {
 export {
   createStore,
   storeRatings,
-  createStoreRelations,
-  storesRelations,
-  storeRatingsRelations,
+  // createStoreRelations,
+  // storesRelations,
+  // storeRatingsRelations,
   type CreateStore,
   type NewCreateStore,
   type StoreRating,
@@ -48,7 +48,7 @@ export {
 // âœ… NEW carousel (JSONB - 1 table)
 export {
   store_carousel,
-  storeCarouselRelations,
+  // storeCarouselRelations,
   type CarouselItem,
   type StoreCarousel,
   type NewStoreCarousel,
@@ -58,8 +58,8 @@ export {
 export {
   store_carousel_old,
   carousel_items_old,
-  storeCarouselOldRelations,
-  carouselItemsOldRelations,
+  // storeCarouselOldRelations,
+  // carouselItemsOldRelations,
   type StoreCarouselOld,
   type NewStoreCarouselOld,
   type CarouselItemOld,
@@ -72,7 +72,7 @@ export {
 // âœ… Add new product schema!
 export {
   store_product,
-  storeProductRelations,
+  // storeProductRelations,
   type ProductColor,
   type StoreProduct,
   type NewStoreProduct,
@@ -84,8 +84,8 @@ export {
 export {
   store_cart,
   store_cart_item,
-  storeCartRelations,
-  storeCartItemRelations,
+  // storeCartRelations,
+  // storeCartItemRelations,
   type StoreCart,
   type NewStoreCart,
   type StoreCartItem,
@@ -100,8 +100,8 @@ export {
 export {
   store_order,
   store_order_item,
-  storeOrderRelations,
-  storeOrderItemRelations,
+  // storeOrderRelations,
+  // storeOrderItemRelations,
   orderStatusEnum,       // âœ… ADD THIS
   paymentStatusEnum,     // âœ… ADD THIS
   paymentMethodEnum,     // âœ… ADD THIS
@@ -113,35 +113,3 @@ export {
   type NewStoreOrderItem,
   type StoreOrderWithItems,
 } from "./store/store_order.schema";
-
-// export {
-//   store_order,
-//   store_order_item,
-//   storeOrderRelations,
-//   storeOrderItemRelations,
-//   type StoreOrder,
-//   type NewStoreOrder,
-//   type StoreOrderItem,
-//   type NewStoreOrderItem,
-//   type StoreOrderWithItems,
-// } from "./store/store_order.schema";
-// export * from "./user.schema";
-// // export * from "./userStore.schema"; // removed - using createStore instead
-// export * from "./watchHistory.schema";
-// export * from "./followlist.schema";
-
-
-// // âœ… Use specific named exports to avoid conflicts
-// export {
-//   createStore,
-//   storeRatings,
-//   createStoreRelations,
-//   storesRelations,
-//   storeRatingsRelations,
-//   type CreateStore,
-//   type NewCreateStore,
-//   type StoreRating,
-//   type NewStoreRating,
-// } from "./store/createStore.schema";
-
-// export * from "./store/store_carousel.schema";

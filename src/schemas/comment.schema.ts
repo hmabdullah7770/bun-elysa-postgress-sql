@@ -103,12 +103,13 @@ export const comments = pgTable(
   })
 );
 
-export const commentsRelations = relations(comments, ({ one }) => ({
-  ownerUser: one(users, {
-    fields: [comments.owner],
-    references: [users._id],
-  }),
-}));
+// relation commented
+// export const commentsRelations = relations(comments, ({ one }) => ({
+//   ownerUser: one(users, {
+//     fields: [comments.owner],
+//     references: [users._id],
+//   }),
+// }));
 
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
