@@ -4,11 +4,13 @@ import { isValidId } from "../Validators/bigintvalidator";
 import { ApiError } from "../utils/ApiError";
 
 export const newAddComment = async ({ params, body, userVerified }: any) => {
-  const postId = params.postId;
-  
-  if (!isValidId(postId)) {
+  const postId = Number(params.postId);
+
+  if(!isValidId(postId)) {
     throw new ApiError(400, "Invalid post ID");
   }
+  
+  
 
   const files = {
     audioComment: body?.audioComment,
@@ -19,7 +21,7 @@ export const newAddComment = async ({ params, body, userVerified }: any) => {
   };
 
   const data = await commentService.addComment({
-    postId,
+      postId,
     ownerId: userVerified._id,
     body,
     files,
@@ -30,6 +32,11 @@ export const newAddComment = async ({ params, body, userVerified }: any) => {
 
 export const newUpdateComment = async ({ params, body, userVerified }: any) => {
   const commentId = Number(params.commentId);
+  
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
+  
   const files = {
     audioComment: body?.audioComment,
     videoComment: body?.videoComment,
@@ -48,24 +55,30 @@ export const newUpdateComment = async ({ params, body, userVerified }: any) => {
 
 export const newDeleteComment = async ({ params, body, userVerified }: any) => {
   const commentId = Number(params.commentId);
-  const postId = body?.postId;
+  const postId = Number(body?.postId);
 
   if(!isValidId(postId)) {
     throw new ApiError(400, "Invalid post ID");
   }
+ if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+ }
 
   const result = await commentService.deleteComment({
     commentId,
     ownerId: userVerified._id,
-    postId,
+   postId: postId,
   });
 
   return new ApiResponse(200, result, "Post comment and its replies deleted successfully");
 };
 
 export const newGetComments = async ({ params, query, userVerified }: any) => {
-  const postId = params.postId;
+  const postId = Number(params.postId);
 
+  if(!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
   
   const data = await commentService.getComments({
     postId,
@@ -85,6 +98,11 @@ export const newAddReply = async ({ params, body, userVerified }: any) => {
     fileComment: body?.fileComment,
   };
 
+if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
+
+
   const reply = await commentService.addReply({
     commentId,
     ownerId: userVerified._id,
@@ -97,6 +115,12 @@ export const newAddReply = async ({ params, body, userVerified }: any) => {
 
 export const newGetReplies = async ({ params, query, userVerified }: any) => {
   const commentId = Number(params.commentId);
+  
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
+  
+  
   const data = await commentService.getReplies({
     commentId,
     userId: userVerified._id,
@@ -107,10 +131,18 @@ export const newGetReplies = async ({ params, query, userVerified }: any) => {
 
 export const pinComment = async ({ params, body, userVerified }: any) => {
   const commentId = Number(params.commentId);
-  const postId = body?.postId;
+  const postId = Number(body?.postId);
+
+  if(!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
+
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
   const data = await commentService.pinComment({
     commentId,
-    postId,
+    postId: postId,
     userId: userVerified._id,
   });
   return new ApiResponse(200, data, "Comment pinned successfully");
@@ -118,9 +150,13 @@ export const pinComment = async ({ params, body, userVerified }: any) => {
 
 export const unpinComment = async ({ params, body, userVerified }: any) => {
   const commentId = Number(params.commentId);
-  const postId = body?.postId;
+  const postId = Number(body?.postId);
    if (!isValidId(postId)) {
     throw new ApiError(400, "Invalid post ID");
+  }
+
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
   }
 
   const data = await commentService.unpinComment({
@@ -133,6 +169,10 @@ export const unpinComment = async ({ params, body, userVerified }: any) => {
 
 export const toggleCommentLike = async ({ params, userVerified }: any) => {
   const commentId = Number(params.commentId);
+  
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
   const r = await commentService.toggleLike({ commentId, userId: userVerified._id });
   return new ApiResponse(200, {
     commentId: r.commentId,
@@ -145,6 +185,9 @@ export const toggleCommentLike = async ({ params, userVerified }: any) => {
 
 export const toggleCommentDislike = async ({ params, userVerified }: any) => {
   const commentId = Number(params.commentId);
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
   const r = await commentService.toggleDislike({ commentId, userId: userVerified._id });
   return new ApiResponse(200, {
     commentId: r.commentId,
@@ -157,12 +200,19 @@ export const toggleCommentDislike = async ({ params, userVerified }: any) => {
 
 export const getCommentLikeStatus = async ({ params, userVerified }: any) => {
   const commentId = Number(params.commentId);
+  
+  if(!isValidId(commentId)) {
+    throw new ApiError(400, "Invalid comment ID");
+  }
   const data = await commentService.getLikeStatus({ commentId, userId: userVerified._id });
   return new ApiResponse(200, data, "Comment like status fetched successfully");
 };
 
 export const searchComments = async ({ params, query, userVerified }: any) => {
-  const postId = params.postId;
+  const postId =Number(params.postId);
+  if(!isValidId(postId)) {
+    throw new ApiError(400, "Invalid post ID");
+  }
   const data = await commentService.search({
     postId,
     userId: userVerified._id,

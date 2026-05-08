@@ -36,7 +36,8 @@ export const store_cart_item = pgTable("store_cart_item", {
     .notNull()
     .references(() => store_cart._id, { onDelete: "cascade" }),
 
-  productId: uuid("product_id"),
+  // productId: uuid("product_id"),
+  productId: bigint("product_id", { mode: "number" }),
 
   quantity: integer("quantity").notNull().default(1),
 

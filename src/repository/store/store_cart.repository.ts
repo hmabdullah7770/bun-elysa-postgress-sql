@@ -32,7 +32,7 @@ export class StoreCartRepository {
   }
 
   async findProductsByIdsAndStore(
-    productIds: string[],
+    productIds: number[],
     storeId: string
   ) {
     if (!productIds.length) return [];
@@ -94,7 +94,7 @@ export class StoreCartRepository {
   // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Find cart item Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async findStoreCartItem(
     storeCartId: number,   // Ã¢Å“â€¦ number (BIGINT - store_cart._id)
-    productId: string,     // Ã¢Å“â€¦ string (UUID)
+    productId: number,     // Ã¢Å“â€¦ string (UUID)
     colorId: number | null,
     size: string | null,
   ): Promise<StoreCartItem | undefined> {
@@ -160,7 +160,7 @@ export class StoreCartRepository {
   // Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬ Remove all items by productId Ã¢â€â‚¬Ã¢â€â‚¬Ã¢â€â‚¬
   async removeByProduct(
     storeCartId: number,
-    productId: string    // Ã¢Å“â€¦ string (UUID)
+    productId: number    // Ã¢Å“â€¦ string (UUID)
   ): Promise<StoreCartItem[]> {
     return await db
       .delete(store_cart_item)

@@ -7,6 +7,7 @@ import { ApiResponse } from "../../utils/ApiResponse";
 import { ApiError } from "../../utils/ApiError";
 import { storeCarouselService } from "../../services/store/store_carousel.service";
 
+
 // âœ… Create carousel
 export const createCarousel = async ({ params, body }: any) => {
   const { storeId } = params;
@@ -65,7 +66,7 @@ export const updateCarousel = async ({ params, body }: any) => {
 
   const result = await storeCarouselService.updateCarousel(
     storeId,
-    carouselId,
+    Number(carouselId),
     body,
     file
   );
@@ -77,7 +78,7 @@ export const updateCarousel = async ({ params, body }: any) => {
 export const deleteCarousel = async ({ params }: any) => {
   const { storeId, carouselId } = params;
 
-  await storeCarouselService.deleteCarousel(storeId, carouselId);
+  await storeCarouselService.deleteCarousel(storeId, Number(carouselId));
 
   return new ApiResponse(200, null, "Carousel deleted successfully");
 };

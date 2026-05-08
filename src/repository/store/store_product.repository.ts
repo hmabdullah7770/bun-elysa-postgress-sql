@@ -12,7 +12,7 @@ import { eq, and, desc, asc, ilike, sql } from "drizzle-orm";
 class StoreProductRepository {
 
   // Ã¢Å“â€¦ Find product by ID
-  async findById(productId: string) {
+  async findById(productId: number) {
     const [product] = await db
       .select()
       .from(store_product)
@@ -23,7 +23,7 @@ class StoreProductRepository {
 
 
   // Ã¢Å“â€¦ Increment ordersalltime counter
-async incrementOrdersAllTime(productId: string): Promise<void> {
+async incrementOrdersAllTime(productId: number): Promise<void> {
   await db
     .update(store_product)
     .set({
@@ -111,7 +111,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
 
   // Ã¢Å“â€¦ Update product
   async update(
-    productId: string,
+    productId: number,
     data: Partial<NewStoreProduct>
   ) {
     const [updated] = await db
@@ -123,7 +123,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
   }
 
   // Ã¢Å“â€¦ Delete product
-  async delete(productId: string) {
+  async delete(productId: number) {
     const [deleted] = await db
       .delete(store_product)
       .where(eq(store_product._id, productId))
@@ -132,7 +132,7 @@ async incrementOrdersAllTime(productId: string): Promise<void> {
   }
 
   // Ã¢Å“â€¦ Remove specific image from product
-  async removeImage(productId: string, imageUrl: string) {
+  async removeImage(productId: number, imageUrl: string) {
     // Get current images
     const product = await this.findById(productId);
     if (!product) throw new ApiError(404, "Product not found");

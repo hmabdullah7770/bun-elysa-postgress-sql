@@ -39,7 +39,7 @@ export const getStoreProducts = async ({ params, query }: any) => {
 export const getProductById = async ({ params }: any) => {
   const { productId } = params;
 
-  const product = await storeProductService.getProductById(productId);
+  const product = await storeProductService.getProductById(Number(productId));
 
   return new ApiResponse(200, product, "Product fetched successfully");
 };
@@ -56,7 +56,7 @@ export const updateProduct = async ({ params, body }: any) => {
   }
 
   const product = await storeProductService.updateProduct(
-    productId,
+    Number(productId),
     storeId,
     body,
     filesByIndex
@@ -69,7 +69,7 @@ export const updateProduct = async ({ params, body }: any) => {
 export const deleteProduct = async ({ params }: any) => {
   const { productId, storeId } = params;
 
-  await storeProductService.deleteProduct(productId, storeId);
+  await storeProductService.deleteProduct(Number(productId), storeId);
 
   return new ApiResponse(200, null, "Product deleted successfully");
 };
@@ -80,7 +80,7 @@ export const removeProductImage = async ({ params, body }: any) => {
   const { imageUrl } = body;
 
   const product = await storeProductService.removeProductImage(
-    productId,
+    Number(productId),
     storeId,
     imageUrl
   );

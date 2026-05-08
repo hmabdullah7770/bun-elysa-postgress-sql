@@ -4,9 +4,10 @@ import { storeProductRepository } from "../../repository/store/store_product.rep
 import { createstoreRepository } from "../../repository/store/createstore.repository";
 import { ApiError } from "../../utils/ApiError";
 import { type StoreOrderItem } from "../../schemas/store/store_order.schema";
+import {isValidId} from "../../Validators/bigintvalidator";
 
 interface CreateOrderItemInput {
-  productId: string;
+  productId: number;
   quantity: number;
   color?: string | null;
   size?: string | null;
@@ -56,14 +57,21 @@ export const storeOrderService = {
       "_id" | "orderId" | "createdAt" | "updatedAt"
     >[] = [];
 
-    const productIdsToUpdate: string[] = [];
+    const productIdsToUpdate: number[] = [];
     let totalAmount = 0;
 
     for (const item of items) {
-      if (!item.productId || !item.quantity || item.quantity <= 0) {
+     
+       const productId = Number(item.productId); // ← add this
+
+     
+      if (!item.quantity || item.quantity <= 0) {
         throw new ApiError(400, "Each item must have a valid productId and quantity");
       }
 
+      if(!isValidId(productId)) {
+        throw new ApiError(400, "Invalid productId format");
+      }
       // Fetch product from this store
       const product = await storeProductRepository.findById(item.productId);
       if (!product || product.storeId !== storeId) {
@@ -143,14 +151,21 @@ export const storeOrderService = {
   },
 
   // âœ… Get order by ID
-  async getOrderById(orderId: string) {
+  async getOrderById(orderId: number) {
+
+    if(!isValidId(orderId)) {
+      throw new ApiError(400, "Invalid orderId format");
+    }
     const order = await storeOrderRepository.findById(orderId);
     if (!order) throw new ApiError(404, "Order not found");
     return order;
   },
 
   // âœ… Get order by ID and store
-  async getOrderByIdAndStore(orderId: string, storeId: string) {
+  async getOrderByIdAndStore(orderId: number, storeId: string) {
+    if(!isValidId(orderId)) {
+      throw new ApiError(400, "Invalid orderId format");
+    }
     const order = await storeOrderRepository.findByIdAndStore(orderId, storeId);
     if (!order) throw new ApiError(404, "Order not found");
     return order;
@@ -158,10 +173,14 @@ export const storeOrderService = {
 
   // âœ… Update order status
   async updateOrderStatus(
-    orderId: string,
+    orderId: number,
     orderStatus: StoreOrderItem["itemStatus"],
     trackingNumber?: string
   ) {
+     if(!isValidId(orderId)) {
+      throw new ApiError(400, "Invalid orderId format");
+    }
+
     const order = await storeOrderRepository.updateOrderStatus(
       orderId,
       orderStatus,
@@ -218,10 +237,14 @@ export const storeOrderService = {
 
   // âœ… Cancel order by customer (only pending orders)
   async cancelOrderByCustomer(
-    orderId: string,
+    orderId: number,
     storeId: string,
     customerId: string
   ) {
+
+    if(!isValidId(orderId)) {
+      throw new ApiError(400, "Invalid orderId format");
+    }
     const order = await storeOrderRepository.findByIdAndStore(orderId, storeId);
     if (!order) throw new ApiError(404, "Order not found");
 
@@ -241,10 +264,14 @@ export const storeOrderService = {
 
   // âœ… Delete order by store owner (hard delete â€” cascades items)
   async deleteOrderByOwner(
-    orderId: string,
+    orderId: number,
     storeId: string,
     ownerId: string
   ) {
+
+    if(!isValidId(orderId)) {
+      throw new ApiError(400, "Invalid orderId format");
+    }
     const order = await storeOrderRepository.findByIdAndStore(orderId, storeId);
     if (!order) throw new ApiError(404, "Order not found");
 
@@ -260,12 +287,20 @@ export const storeOrderService = {
 
   // âœ… Update individual item status (store owner only)
   async updateItemStatus(
-    orderId: string,
+    orderId: number,
     storeId: string,
-    itemId: string,
+    itemId: number,
     itemStatus?: StoreOrderItem["itemStatus"],
     itemPaymentStatus?: StoreOrderItem["itemPaymentStatus"]
   ) {
+
+    if(!isValidId(orderId)) {
+      throw new ApiError(400, "Invalid orderId format");
+    }
+
+      if(!isValidId(itemId)) {
+      throw new ApiError(400, "Invalid ItemId format");
+    }
     if (!itemStatus && !itemPaymentStatus) {
       throw new ApiError(400, "Provide itemStatus or itemPaymentStatus to update");
     }

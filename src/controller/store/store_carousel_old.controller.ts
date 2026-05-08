@@ -68,6 +68,6 @@ export const updateCarouselOld = async ({ params, body }: any) => {
 
 export const deleteCarouselOld = async ({ params }: any) => {
   const { storeId, carouselId } = params;
-  await storeCarouselOldService.deleteCarousel(storeId, carouselId);
+  await storeCarouselOldService.deleteCarousel(storeId, Number(carouselId));
   return new ApiResponse(200, {}, "Carousel deleted successfully");
 };

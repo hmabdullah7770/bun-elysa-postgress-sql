@@ -14,6 +14,7 @@
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { users } from "./user.schema";
+import { posts } from "./post.schema";
 
 export const commentTypeEnum = pgEnum("comment_type", [
   "text",
@@ -52,7 +53,10 @@ export const comments = pgTable(
     stickerUrl: text("sticker_url").default(sql`null`),
     fileUrl: text("file_url").default(sql`null`),
 
-    postId: text("post_id").notNull(),
+    // postId: text("post_id").notNull(),
+    postId: bigint("post_id", { mode: "number" })
+  .notNull()
+  .references(() => posts._id, { onDelete: "cascade" }),
 
     pinned: boolean("pinned").notNull().default(false),
 

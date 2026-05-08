@@ -427,7 +427,7 @@ export class PostService {
       productData.push({
         productisActive: Boolean(body.productisActive),
         productIconSize: body.productIconSize || "S",
-        ProductId: body.ProductId || undefined,
+        ProductId: Number(body.ProductId) || undefined,
         productUrl: body.productUrl || undefined,
       });
     }

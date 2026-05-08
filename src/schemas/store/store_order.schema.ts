@@ -1,7 +1,7 @@
 ﻿// src/db/schema/store_order.schema.ts
 import {
   pgTable, uuid, varchar, text, numeric,
-  boolean, timestamp, pgEnum, integer, index,
+  boolean, timestamp, pgEnum, integer, index,bigint,bigserial
 } from "drizzle-orm/pg-core";
 // import { relations } from "drizzle-orm";
  import { users } from "../user.schema";
@@ -28,7 +28,8 @@ export const itemPaymentStatusEnum = pgEnum("item_payment_status", [
 export const store_order = pgTable(
   "store_order",
   {
-    _id: uuid("_id").defaultRandom().primaryKey(),
+    // _id: uuid("_id").defaultRandom().primaryKey(),
+    _id: bigint("_id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity({startWith: 17417}),
 
     // ✅ Customer — FK to users
     customerId: uuid("customer_id")
@@ -87,13 +88,19 @@ export const store_order = pgTable(
 export const store_order_item = pgTable(
   "store_order_item",
   {
-    _id: uuid("_id").defaultRandom().primaryKey(),
+    // _id: uuid("_id").defaultRandom().primaryKey(),
+_id: bigint("_id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity({startWith: 17417}),
+    
+// orderId: uuid("order_id")
+//       .notNull()
+//       .references(() => store_order._id, { onDelete: "cascade" }),
 
-    orderId: uuid("order_id")
-      .notNull()
-      .references(() => store_order._id, { onDelete: "cascade" }),
+orderId: bigint("order_id", { mode: "number" })
+  .notNull()
+  .references(() => store_order._id, { onDelete: "cascade" }),
 
-    productId: uuid("product_id").notNull(),
+    // productId: uuid("product_id").notNull(),
+    productId: bigint("product_id", { mode: "number" }).notNull(),
     productName: varchar("product_name", { length: 255 }).notNull(),
     productImages: text("product_images").array().notNull().default([]),
 

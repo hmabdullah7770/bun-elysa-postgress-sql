@@ -5,7 +5,7 @@ import { comments, users, posts } from "../schemas";
 type CommentRow = {
   _id: number;
   inCommentId: bigint;
-  postId: string;
+  postId: number;
   content: string | null;
   commentType: string;
   audioUrl: string | null;
@@ -39,11 +39,11 @@ export class CommentRepository {
 
 
   
-  async findPostById(postId: string) {
+  async findPostById(postId: number) {
   const rows = await db
     .select({ _id: posts._id })
     .from(posts)
-    .where(eq(posts._id, Number(postId)))  // convert inside
+    .where(eq(posts._id,postId))  // convert inside
     .limit(1);
   return rows[0];
 }
@@ -52,7 +52,7 @@ export class CommentRepository {
   async create(values: {
     _id: number;
     inCommentId: bigint;
-    postId: string;
+    postId: number;
     owner: string;
     content?: string | null;
     pinned?: boolean;
@@ -109,14 +109,14 @@ export class CommentRepository {
     });
   }
 
-  async unpinForPost(postId: string) {
+  async unpinForPost(postId: number) {
     await db
       .update(comments)
       .set({ pinned: false, updatedAt: new Date() })
       .where(and(eq(comments.postId, postId), eq(comments.pinned, true), eq(comments.isReply, false)));
   }
 
-  async findPinnedForPost(postId: string) {
+  async findPinnedForPost(postId: number) {
     const rows = await db
       .select({
         comment: comments,
@@ -136,7 +136,7 @@ export class CommentRepository {
   }
 
   async findTopLevelPage(params: {
-    postId: string;
+    postId: number;
     limit: number;
     sortType: "asc" | "desc";
     cursorCreatedAt?: Date | null;
@@ -241,7 +241,7 @@ export class CommentRepository {
   }
 
   async search(params: {
-    postId: string;
+    postId: number;
     searchTerm: string;
     limit: number;
     includeReplies: boolean;

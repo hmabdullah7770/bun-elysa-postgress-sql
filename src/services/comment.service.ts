@@ -76,7 +76,7 @@ const toFrontendComment = (
 
 export class CommentService {
   async addComment(params: {
-    postId: string;
+    postId: number;
     ownerId: string;
     body: { content?: string; pinned?: boolean | string };
     files: {
@@ -87,6 +87,11 @@ export class CommentService {
       fileComment?: File;
     };
   }) {
+
+   if (!isValidId(params.postId)) {
+      throw new ApiError(400, "Invalid post ID");
+    }
+
     const content = typeof params.body.content === "string" ? params.body.content : undefined;
     const hasText = Boolean(content && content.trim().length > 0);
 
@@ -104,6 +109,7 @@ export class CommentService {
       );
     }
 
+    
     const shouldPin = params.body.pinned === true || params.body.pinned === "true";
 
     // Upload media (if present)
@@ -221,6 +227,10 @@ export class CommentService {
       sticker?: File;
     };
   }) {
+
+    if(!isValidId(params.commentId)) {
+      throw new ApiError(400, "Invalid comment ID");
+    }
     const content = typeof params.body.content === "string" ? params.body.content : "";
     if (!content || !content.trim()) throw new ApiError(400, "Comment content is required");
 
@@ -268,7 +278,14 @@ export class CommentService {
     return toFrontendComment(withOwner, { currentUserId: params.ownerId });
   }
 
-  async deleteComment(params: { commentId: number; ownerId: string; postId: string }) {
+  async deleteComment(params: { commentId: number; ownerId: string; postId: number }) {
+    if(!isValidId(params.commentId)) {
+      throw new ApiError(400, "Invalid comment ID");
+    }
+
+    if(!isValidId(params.postId)) {
+      throw new ApiError(400, "Invalid post ID");
+    }
     const existing = await commentRepository.findById(params.commentId);
     if (!existing) throw new ApiError(404, "Comment not found");
     if (existing.postId !== params.postId) throw new ApiError(404, "Comment not found");
@@ -292,6 +309,11 @@ export class CommentService {
       fileComment?: File;
     };
   }) {
+
+    if(!isValidId(params.commentId)) {
+      throw new ApiError(400, "Invalid comment ID");
+    }
+
     const parent = await commentRepository.findById(params.commentId);
     if (!parent) throw new ApiError(404, "Parent comment not found");
 
@@ -407,7 +429,7 @@ export class CommentService {
   }
 
   async getComments(params: {
-    postId: string;
+    postId: number;
     userId: string;
     query: any;
   }) {
@@ -518,6 +540,10 @@ export class CommentService {
     const shouldGetHasReply = getHasReply === "true";
     const shouldGetRepliesCount = getRepliesCount === "true";
     const shouldGetTotalCount = getTotalCount === "true";
+     
+    if (!isValidId(params.commentId)) {
+      throw new ApiError(400, "Invalid comment ID");
+    }
 
     const parent = await commentRepository.findById(params.commentId);
     if (!parent) throw new ApiError(404, "Parent comment not found");
@@ -565,8 +591,10 @@ export class CommentService {
     };
   }
 
-  async pinComment(params: { commentId: number; postId: string; userId: string }) {
-    const c = await commentRepository.findById(params.commentId);
+  async pinComment(params: { commentId: number; postId: number; userId: string }) {
+     if(!isValidId(params.postId)) throw new ApiError(400, "Invalid post ID");
+     if(!isValidId(params.commentId)) throw new ApiError(400, "Invalid comment ID");
+     const c = await commentRepository.findById(params.commentId);
     if (!c || c.postId !== params.postId || c.isReply) {
       throw new ApiError(
         404,
@@ -574,17 +602,28 @@ export class CommentService {
       );
     }
 
+   
+
     if (c.pinned) throw new ApiError(400, "Comment is already pinned");
+
+   
+
     await commentRepository.unpinForPost(params.postId);
+   
     const updated = await commentRepository.updateById(params.commentId, { pinned: true });
     if (!updated) throw new ApiError(500, "Failed to pin comment");
     const withOwner = await commentRepository.findByIdWithOwner(updated._id);
     return toFrontendComment(withOwner, { currentUserId: params.userId });
   }
 
-  async unpinComment(params: { commentId: number; postId: string; userId: string }) {
+  async unpinComment(params: { commentId: number; postId: number; userId: string }) {
+    
+    if(!isValidId(params.commentId)) throw new ApiError(400, "Invalid comment ID");
+    if(!isValidId(params.postId)) throw new ApiError(400, "Invalid post ID");
     const c = await commentRepository.findById(params.commentId);
+    
     if (!c || c.postId !== params.postId || !c.pinned) throw new ApiError(404, "Pinned comment not found");
+    
     const updated = await commentRepository.updateById(params.commentId, { pinned: false });
     if (!updated) throw new ApiError(500, "Failed to unpin comment");
     const withOwner = await commentRepository.findByIdWithOwner(updated._id);
@@ -592,6 +631,8 @@ export class CommentService {
   }
 
   async toggleLike(params: { commentId: number; userId: string }) {
+    
+    if(!isValidId(params.commentId)) throw new ApiError(400, "Invalid comment ID");
     const c = await commentRepository.findById(params.commentId);
     if (!c) throw new ApiError(404, "Comment not found");
 
@@ -652,6 +693,9 @@ export class CommentService {
   }
 
   async toggleDislike(params: { commentId: number; userId: string }) {
+    
+    if(!isValidId(params.commentId)) throw new ApiError(400, "Invalid comment ID");
+    
     const c = await commentRepository.findById(params.commentId);
     if (!c) throw new ApiError(404, "Comment not found");
 
@@ -712,6 +756,9 @@ export class CommentService {
   }
 
   async getLikeStatus(params: { commentId: number; userId: string }) {
+    
+    if(!isValidId(params.commentId)) throw new ApiError(400, "Invalid comment ID");
+  
     const c = await commentRepository.findById(params.commentId);
     if (!c) throw new ApiError(404, "Comment not found");
 
@@ -727,8 +774,11 @@ export class CommentService {
     };
   }
 
-  async search(params: { postId: string; userId: string; query: any }) {
+  async search(params: { postId: number; userId: string; query: any }) {
     const q = params.query ?? {};
+   
+   if(!isValidId(params.postId)) throw new ApiError(400, "Invalid post ID");
+   
     const searchTerm = String(q.searchTerm ?? "").trim();
     if (!searchTerm) throw new ApiError(400, "Search term is required");
 

@@ -45,7 +45,7 @@ export const storeOrderRepository = {
   },
 
   // Ã¢Å“â€¦ Find order by _id with items
-  async findById(_id: string): Promise<StoreOrderWithItems | undefined> {
+  async findById(_id: number): Promise<StoreOrderWithItems | undefined> {
     const order = await db.query.store_order.findFirst({
       where: eq(store_order._id, _id),
       with: {
@@ -57,7 +57,7 @@ export const storeOrderRepository = {
 
   // Ã¢Å“â€¦ Find order by _id and storeId with items
   async findByIdAndStore(
-    _id: string,
+    _id: number,
     storeId: string
   ): Promise<StoreOrderWithItems | undefined> {
     const order = await db.query.store_order.findFirst({
@@ -146,7 +146,7 @@ export const storeOrderRepository = {
 
   // Ã¢Å“â€¦ Update order status
   async updateOrderStatus(
-    _id: string,
+    _id: number,
     orderStatus: StoreOrder["orderStatus"],
     trackingNumber?: string
   ): Promise<StoreOrderWithItems | undefined> {
@@ -166,8 +166,8 @@ export const storeOrderRepository = {
 
   // Ã¢Å“â€¦ Update individual item status Ã¢â‚¬â€ CLEAN with two tables
   async updateItemStatus(
-    itemId: string,
-    orderId: string,
+    itemId: number,
+    orderId: number,
     storeId: string,
     itemStatus?: StoreOrderItem["itemStatus"],
     itemPaymentStatus?: StoreOrderItem["itemPaymentStatus"]
@@ -202,7 +202,7 @@ export const storeOrderRepository = {
 
   // Ã¢Å“â€¦ Cancel order
   async cancelOrder(
-    _id: string
+    _id: number
   ): Promise<StoreOrderWithItems | undefined> {
     const [updated] = await db
       .update(store_order)
@@ -222,7 +222,7 @@ export const storeOrderRepository = {
 
   // Ã¢Å“â€¦ Hard delete order (cascade deletes items automatically)
   async deleteOrder(
-    _id: string,
+    _id: number,
     storeId: string
   ): Promise<boolean> {
     const result = await db
@@ -239,7 +239,7 @@ export const storeOrderRepository = {
   },
 
   // Ã¢Å“â€¦ Mark notification sent
-  async markNotified(_id: string): Promise<void> {
+  async markNotified(_id: number): Promise<void> {
     await db
       .update(store_order)
       .set({

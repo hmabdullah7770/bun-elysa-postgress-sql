@@ -18,8 +18,12 @@ export class StoreCartController {
       throw new ApiError(400, "userId, storeId and productId are required");
     }
 
-    if (!isUUID(userId) || !isUUID(storeId) || !isUUID(productId)) {
+    if (!isUUID(userId) || !isUUID(storeId) ) {
       throw new ApiError(400, "Invalid ID format");
+    }
+
+    if(!isValidId(productId)) {
+      throw new ApiError(400, "Invalid productId format");
     }
 
     if (isNaN(quantity) || quantity < 1) {
@@ -29,7 +33,7 @@ export class StoreCartController {
     const cart = await storeCartService.addToStoreCart({
       userId: String(userId),
       storeId: String(storeId),
-      productId: String(productId),
+      productId: Number(productId),
       quantity,
       replaceQuantity,
       color: color ?? null,
@@ -65,14 +69,18 @@ export class StoreCartController {
       throw new ApiError(400, "userId, storeId and productId are required");
     }
 
-    if (!isValidId(userId) || !isValidId(storeId) || !isValidId(productId)) {
+     if (!isUUID(userId) || !isUUID(storeId)) {
+      throw new ApiError(400, "Invalid ID format");
+    }
+
+    if (!isValidId(productId)) {
       throw new ApiError(400, "Invalid ID format");
     }
 
     const cart = await storeCartService.removeFromStoreCart({
       userId: String(userId),
       storeId: String(storeId),
-      productId: String(productId),
+      productId: Number(productId),
       color: color ?? null,
       size: size ?? null,
     });
@@ -88,9 +96,11 @@ export class StoreCartController {
       throw new ApiError(400, "userId and storeId are required");
     }
 
-    if (!isValidId(userId) || !isValidId(storeId)) {
+
+     if (!isUUID(userId) || !isUUID(storeId)) {
       throw new ApiError(400, "Invalid ID format");
-    }
+     }
+  
 
     await storeCartService.clearStoreCart(
       String(userId),

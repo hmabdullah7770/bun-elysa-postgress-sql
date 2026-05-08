@@ -5,6 +5,7 @@ import { saveTempFile, uploadResult } from "../../utils/cloudinary";
 import type { ProductColor } from "../../schemas/store/store_product.schema";
 import { isUUID } from "../../Validators/isUUID";
 import { safeParseJSON } from "../../Validators/safeParseJSON";
+import { isValidId } from "../../Validators/bigintvalidator";
 
 class StoreProductService {
 
@@ -137,9 +138,9 @@ async addProduct(
   }
 
   // âœ… Get product by ID
-  async getProductById(productId: string) {
+  async getProductById(productId: number) {
     if (!productId) throw new ApiError(400, "Product ID is required");
-
+    if (!isValidId(productId))  throw new ApiError(400, "Invalid Product ID format");
     const product = await storeProductRepository.findById(productId);
     if (!product) throw new ApiError(404, "Product not found");
 
@@ -148,12 +149,14 @@ async addProduct(
 
   // âœ… Update product
   async updateProduct(
-    productId: string,
+    productId: number,
     storeId: string,
     body: any,
     files?: Record<number, any>
   ) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
+    if (!productId) throw new ApiError(400, "Product ID is required");
+    if (!isValidId(productId))  throw new ApiError(400, "Invalid Product ID format");
 
     const product = await storeProductRepository.findById(productId);
     if (!product) throw new ApiError(404, "Product not found");
@@ -226,8 +229,10 @@ async addProduct(
   }
 
   // âœ… Delete product
-  async deleteProduct(productId: string, storeId: string) {
+  async deleteProduct(productId: number, storeId: string) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
+    if (!productId) throw new ApiError(400, "Product ID is required");
+    if (!isValidId(productId))  throw new ApiError(400, "Invalid Product ID format");
 
     const product = await storeProductRepository.findById(productId);
     if (!product) throw new ApiError(404, "Product not found");
@@ -237,12 +242,15 @@ async addProduct(
 
   // âœ… Remove product image
   async removeProductImage(
-    productId: string,
+    productId: number ,
     storeId: string,
     imageUrl: string
   ) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
     if (!imageUrl) throw new ApiError(400, "Image URL is required");
+
+    if(!isValidId)  throw new ApiError(400, "Invalid Product ID format");
+    
 
     return await storeProductRepository.removeImage(productId, imageUrl);
   }

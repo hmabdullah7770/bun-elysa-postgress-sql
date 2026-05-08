@@ -6,7 +6,7 @@
 import { db } from "../../db";
 import { store_carousel, type CarouselItem } from "../../schemas/store/store_carousel.schema";
 import { eq, sql } from "drizzle-orm";
-import { randomUUID } from "crypto";
+// import { randomUUID } from "crypto";
 import { ApiError } from "../../utils/ApiError";
 
 class StoreCarouselRepository {
@@ -42,17 +42,18 @@ class StoreCarouselRepository {
   // Ã¢Å“â€¦ Create carousel items
   async createCarouselItems(
     storeId: string,
-    newItems: Omit<CarouselItem, "id" | "createdAt" | "updatedAt">[]
+    newItems: Omit<CarouselItem, "_id" | "createdAt" | "updatedAt">[]
   ) {
     const now = new Date().toISOString();
-
-    const itemsWithId: CarouselItem[] = newItems.map(item => ({
+const baseId = Date.now() % 900000 + 10000;  
+    const itemsWithId: CarouselItem[] = newItems.map((item,i) => ({
       ...item,
-      id: randomUUID(),
+      _id:  baseId + i,
       createdAt: now,
       updatedAt: now,
     }));
 
+   
     const [updated] = await db
       .update(store_carousel)
       .set({
@@ -68,8 +69,8 @@ class StoreCarouselRepository {
   // Ã¢Å“â€¦ Update single carousel item by id
   async updateCarouselItem(
     storeId: string,
-    carouselId: string,
-    updates: Partial<Omit<CarouselItem, "id" | "createdAt">>
+    carouselId: number,
+    updates: Partial<Omit<CarouselItem, "_id" | "createdAt">>
   ) {
     // Ã¢Å“â€¦ Check store exists first
     const existing = await db
@@ -85,6 +86,8 @@ class StoreCarouselRepository {
     const itemExists = carousels.find(c => c._id === carouselId);
     if (!itemExists) throw new ApiError(404, "Carousel item not found");
 
+
+    
     // Ã¢Å“â€¦ Update specific item in JSONB array
     const updatePayload = {
       ...updates,
@@ -97,7 +100,7 @@ class StoreCarouselRepository {
         carousels: sql`(
           SELECT jsonb_agg(
             CASE
-              WHEN item->>'id' = ${carouselId}
+              WHEN (item->>'_id')::bigint = ${carouselId}
               THEN item || ${JSON.stringify(updatePayload)}::jsonb
               ELSE item
             END
@@ -116,7 +119,7 @@ class StoreCarouselRepository {
   }
 
   // Ã¢Å“â€¦ Delete single carousel item
-  async deleteCarouselItem(storeId: string, carouselId: string) {
+  async deleteCarouselItem(storeId: string, carouselId: number) {
     // Ã¢Å“â€¦ Check exists first
     const existing = await db
       .select()
@@ -137,7 +140,8 @@ class StoreCarouselRepository {
         carousels: sql`(
           SELECT jsonb_agg(item)
           FROM jsonb_array_elements(carousels) item
-          WHERE item->>'id' != ${carouselId}
+          
+          WHERE (item->>'_id')::bigint != ${carouselId}
         )`,
         updatedAt: new Date(),
       })
@@ -148,7 +152,7 @@ class StoreCarouselRepository {
   }
 
   // Ã¢Å“â€¦ Get single carousel item
-  async findCarouselItemById(storeId: string, carouselId: string) {
+  async findCarouselItemById(storeId: string, carouselId: number) {
     const [doc] = await db
       .select()
       .from(store_carousel)

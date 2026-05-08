@@ -26,7 +26,7 @@ export type PostStoreItem = {
 export type PostProductItem = {
   productisActive?: boolean;
   productIconSize?: "L" | "S";
-  ProductId?: string;
+  ProductId?: number;
   productUrl?: string;
 };
 
@@ -51,7 +51,7 @@ export const posts = pgTable(
     // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Changed from uuid to bigint
     _id: bigint("_id", { mode: "number" })
       .primaryKey()
-      .generatedAlwaysAsIdentity(),
+      .generatedAlwaysAsIdentity({ startWith: 17417 }),
 
     postIdUnique: varchar("post_id_unique", { length: 255 }).notNull(),
     inCategoryId: varchar("in_category_id", { length: 255 }).notNull(),

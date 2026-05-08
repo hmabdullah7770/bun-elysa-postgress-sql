@@ -64,7 +64,7 @@ export const storeOrderController = {
 
   // âœ… Get order by ID
   async getOrderById(params: { orderId: string }, user: any) {
-    const order = await storeOrderService.getOrderById(params.orderId);
+    const order = await storeOrderService.getOrderById(Number(params.orderId));
     return new ApiResponse(200, order, "Order retrieved successfully");
   },
 
@@ -79,7 +79,7 @@ export const storeOrderController = {
     }
 
     const order = await storeOrderService.updateOrderStatus(
-      params.orderId,
+      Number(params.orderId),
       body.orderStatus as any,
       body.trackingNumber
     );
@@ -134,7 +134,7 @@ export const storeOrderController = {
     user: any
   ) {
     const order = await storeOrderService.cancelOrderByCustomer(
-      params.orderId,
+      Number(params.orderId),
       params.storeId,
       user._id
     );
@@ -149,7 +149,7 @@ export const storeOrderController = {
     store: any
   ) {
     await storeOrderService.deleteOrderByOwner(
-      params.orderId,
+     Number(params.orderId),
       params.storeId,
       store._id
     );
@@ -168,9 +168,9 @@ export const storeOrderController = {
     }
 
     const result = await storeOrderService.updateItemStatus(
-      params.orderId,
+      Number(params.orderId),
       store._id,
-      params.itemId,
+      Number(params.itemId),
       body.itemStatus as any,
       body.itemPaymentStatus as any
     );

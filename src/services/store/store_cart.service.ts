@@ -7,7 +7,7 @@ import type { StoreCartItem } from "../../schemas/store/store_cart.schema";
 interface AddToStoreCartInput {
   userId: string;      // âœ… string (UUID)
   storeId: string;     // âœ… string (UUID)
-  productId: string;   // âœ… string (UUID)
+  productId: number;   // âœ… string (UUID)
   quantity: number;
   replaceQuantity: boolean;
   color: {
@@ -21,7 +21,7 @@ interface AddToStoreCartInput {
 interface RemoveFromStoreCartInput {
   userId: string;      // âœ… string (UUID)
   storeId: string;     // âœ… string (UUID)
-  productId: string;   // âœ… string (UUID)
+  productId: number;   // âœ… string (UUID)
   color: {
     _id: number | null;
   } | null;
@@ -30,7 +30,7 @@ interface RemoveFromStoreCartInput {
 
 // â”€â”€â”€ Response Interfaces â”€â”€â”€
 interface CartItemResponse {
-  productId: string;   // âœ… string (UUID)
+  productId: number;   // âœ… string (UUID)
   quantity: number;
   color: {
     _id: number;
@@ -151,14 +151,24 @@ export class StoreCartService {
     };
   }
 
-  const productIds = [
-    ...new Set(
-      cart.items
-        .map((item) => item.productId)
-        .filter((id): id is string => Boolean(id))
-    ),
-  ];
+  // const productIds = [
+  //   ...new Set(
+  //     cart.items
+  //       .map((item) => item.productId)
+  //       .filter((id): id is string => Boolean(id))
+  //   ),
+  // ];
 
+  
+  // ADD:
+const productIds = [
+  ...new Set(
+    cart.items
+      .map((item) => item.productId)
+      .filter((id): id is number => id !== null && id !== undefined)  // ← now number
+  ),
+]
+  
   const products = await storeCartRepository.findProductsByIdsAndStore(
     productIds,
     storeId
@@ -167,7 +177,7 @@ export class StoreCartService {
   const productMap = new Map(products.map((p) => [p._id, p]));
 
   const items = cart.items.map((item) => {
-    const product = productMap.get(item.productId as string);
+    const product = productMap.get(item.productId as number);
 
     const productPrice = Number(product?.productPrice ?? 0);
     const finalPrice = Number(product?.finalPrice ?? productPrice);
@@ -176,7 +186,7 @@ export class StoreCartService {
 
     return {
       _id :item._id,
-      productId: item.productId as string,
+      productId: item.productId as number,
       productName: product?.productName ?? null,
       productImages: product?.productImages ?? [],
       productPrice,

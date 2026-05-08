@@ -11,6 +11,7 @@ import { saveTempFile } from "../../utils/cloudinary";
 import { uploadResult } from "../../utils/cloudinary";
 import type { CarouselItem } from "../../schemas/store/store_carousel.schema";
 import { createstoreRepository } from "../../repository/store/createstore.repository";
+import {isValidId} from "../../Validators/bigintvalidator";
 
 class StoreCarouselService {
 
@@ -74,7 +75,8 @@ class StoreCarouselService {
         ...(fields.buttonBorder !== undefined && { buttonBorder: fields.buttonBorder }),
         ...(fields.buttonBorderColor && { buttonBorderColor: fields.buttonBorderColor }),
         ...(fields.category && { category: fields.category }),
-        ...(fields.productId && { productId: fields.productId }),
+        // ...(fields.productId && { productId: fields.productId }),
+        ...(fields.productId && { productId: Number(fields.productId) }),
         ...(fields.fontFamily?.length && { fontFamily: fields.fontFamily }),
         ...(fields.overlayOpacity !== undefined && { overlayOpacity: fields.overlayOpacity }),
       });
@@ -106,13 +108,14 @@ class StoreCarouselService {
   // âœ… Update carousel item
   async updateCarousel(
     storeId: string,
-    carouselId: string,
+    carouselId: number,
     body: any,
     file?: any
   ) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
     if (!carouselId) throw new ApiError(400, "Carousel ID is required");
 
+    if(!isValidId(carouselId)) throw new ApiError(400, "Invalid carousel ID");
     const updates: Partial<CarouselItem> = {};
 
     // âœ… Upload new image if provided
@@ -142,7 +145,8 @@ class StoreCarouselService {
     if (body.buttonBorder !== undefined) updates.buttonBorder = body.buttonBorder;
     if (body.buttonBorderColor !== undefined) updates.buttonBorderColor = body.buttonBorderColor;
     if (body.category !== undefined) updates.category = body.category;
-    if (body.productId !== undefined) updates.productId = body.productId;
+    // if (body.productId !== undefined) updates.productId = body.productId;
+    if (body.productId !== undefined) updates.productId = Number(body.productId);
     if (body.fontFamily !== undefined) updates.fontFamily = body.fontFamily;
     if (body.overlayOpacity !== undefined) updates.overlayOpacity = body.overlayOpacity;
 
@@ -153,9 +157,11 @@ class StoreCarouselService {
   }
 
   // âœ… Delete carousel item
-  async deleteCarousel(storeId: string, carouselId: string) {
+  async deleteCarousel(storeId: string, carouselId: number) {
     if (!storeId) throw new ApiError(400, "Store ID is required");
     if (!carouselId) throw new ApiError(400, "Carousel ID is required");
+
+    if(!isValidId(carouselId)) throw new ApiError(400, "Invalid carousel ID");
 
     const deleted = await storeCarouselRepository
       .deleteCarouselItem(storeId, carouselId);

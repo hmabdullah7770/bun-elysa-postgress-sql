@@ -2,7 +2,7 @@
 import {
   pgTable, uuid, varchar, text, numeric,
   integer, boolean, timestamp, index,
-  uniqueIndex, jsonb
+  uniqueIndex, jsonb,bigint
 } from "drizzle-orm/pg-core";
 // import { relations } from "drizzle-orm";
 import { createStore } from "./createStore.schema";
@@ -15,7 +15,8 @@ export type ProductColor = {
 
 // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Product table
 export const store_product = pgTable("store_product", {
-  _id: uuid("_id").defaultRandom().primaryKey(),
+  // _id:  bigint("_id").defaultRandom().primaryKey(),
+  _id: bigint("_id", { mode: "number" }).primaryKey().generatedAlwaysAsIdentity({startWith: 17417}),
   storeId: uuid("store_id")
     .notNull()
     .references(() => createStore._id, { onDelete: "cascade" }),
