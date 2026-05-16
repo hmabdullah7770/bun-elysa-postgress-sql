@@ -1,9 +1,9 @@
 import { defineConfig } from "drizzle-kit";
-import {connectionString} from "./src/db/index"
+import { connectionString } from "./src/db/index"
 
 export default defineConfig({
   schema: "./src/schemas/index.ts",        // where your schema files are
-  out: "./src/migrations",               // where migration files will be generated
+  out: "./src/migrations/migration1",               // where migration files will be generated
   dialect: "postgresql",
   dbCredentials: {
     url: connectionString,

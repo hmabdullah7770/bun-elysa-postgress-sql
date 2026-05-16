@@ -6,9 +6,16 @@
   "scripts": {
     "dev": "bun --hot run src/index.ts",
     "start": "bun run src/index.ts",
-    "db:generate": "bun drizzle-kit generate",
-    "db:migrate": "bun drizzle-kit migrate",
-    "db:studio": "bun drizzle-kit studio"
+    "db:generate":  "bun drizzle-kit generate --config=drizzle.config.ts",
+  "db:migrate":   "bun drizzle-kit migrate  --config=drizzle.config.ts",
+  "db:studio":    "bun drizzle-kit studio   --config=drizzle.config.ts",
+
+  "db2:generate": "bun drizzle-kit generate --config=drizzle.second.config.ts",
+  "db2:migrate":  "bun drizzle-kit migrate  --config=drizzle.second.config.ts",
+  "db2:studio":   "bun drizzle-kit studio   --config=drizzle.second.config.ts",
+
+  "db:migrate:all":  "bun run db:migrate  && bun run db2:migrate",
+  "db:generate:all": "bun run db:generate && bun run db2:generate"
   },
   "devDependencies": {
     "@types/bun": "latest",

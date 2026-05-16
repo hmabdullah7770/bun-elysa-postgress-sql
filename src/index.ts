@@ -1,12 +1,21 @@
-import  app  from "./app";
+import app from "./app";
 import { db } from "./db";
+import { db2 } from "./db"
 import { sql } from "drizzle-orm";
+import { flags } from "./config/flags";  // ← import flags
 
 async function main() {
   try {
     // Verify DB connection before starting server
     await db.execute(sql`SELECT 1`);
     console.log("✅ Database connected successfully");
+
+    if (flags.masterDb) {
+      await db2.execute(sql`SELECT 1`);
+      console.log("✅ Master database connected");
+    } else {
+      console.log("⏭️  Master database skipped (flag disabled)");
+    }
 
     app.listen(process.env.PORT || 3000, () => {
       console.log(
