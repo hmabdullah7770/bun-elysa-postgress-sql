@@ -5,6 +5,9 @@ export * from "./user.schema";
 export * from "./watchHistory.schema";
 export * from "./followlist.schema";
 
+// ✅ OTP schema exports (named)
+export * from "./otp.schema";
+
 // âœ… Comment schema exports (named, like other modules)
 export {
   comments,
