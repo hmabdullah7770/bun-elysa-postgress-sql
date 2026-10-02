@@ -1,100 +1,62 @@
-﻿// import mongoose, { Schema } from "mongoose";
-// import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+﻿import { sql } from "drizzle-orm";
+import {
+	bigint,
+	check,
+	index,
+	numeric,
+	pgTable,
+	text,
+	timestamp,
+	uuid,
+} from "drizzle-orm/pg-core";
+import { posts } from "./post.schema";
+import { users } from "./user.schema";
+import { createStore } from "./store/createStore.schema";
+import { store_product } from "./store/store_product.schema";
 
-// const biddingSchema = new Schema(
-//     {
-//         // The user who is placing the bid (the bidder)
-//         userId: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "User",
-//             required: true,
-//             index: true
-//         },
-        
-//         // The post being bid on
-//         postId: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "Post",
-//             required: true,
-//             index: true
-//         },
-        
-//         // Product related to the bid
-//         productId: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "Product",
-//             required: true
-//         },
+export const bids = pgTable(
+	"bids",
+	{
+		_id: bigint("_id", { mode: "number" })
+			.primaryKey()
+			.generatedAlwaysAsIdentity(),
+		userId: uuid("user_id")
+			.notNull()
+			.references(() => users._id, { onDelete: "cascade" }),
+		postId: bigint("post_id", { mode: "number" })
+			.notNull()
+			.references(() => posts._id, { onDelete: "cascade" }),
+		productId: bigint("product_id", { mode: "number" })
+			.notNull()
+			.references(() => store_product._id, { onDelete: "cascade" }),
+		storeId: uuid("store_id")
+			.notNull()
+			.references(() => createStore._id, { onDelete: "cascade" }),
+		owner: uuid("owner")
+			.notNull()
+			.references(() => users._id, { onDelete: "cascade" }),
+		bidForUserId: uuid("bid_for_user_id").references(() => users._id, {
+			onDelete: "cascade",
+		}),
+		bidAmount: numeric("bid_amount", { precision: 12, scale: 2 }).notNull(),
+		message: text("message").notNull().default(""),
+		createdAt: timestamp("created_at").defaultNow().notNull(),
+		updatedAt: timestamp("updated_at")
+			.defaultNow()
+			.notNull()
+			.$onUpdate(() => new Date()),
+	},
+	(table) => ({
+		positiveAmount: check("bids_positive_amount_check", sql`${table.bidAmount} > 0`),
+		postAmountIdx: index("bids_post_amount_idx").on(table.postId, table.bidAmount),
+		userCreatedIdx: index("bids_user_created_idx").on(table.userId, table.createdAt),
+		postUserIdx: index("bids_post_user_idx").on(table.postId, table.userId),
+		recipientAmountIdx: index("bids_recipient_amount_idx").on(
+			table.bidForUserId,
+			table.bidAmount
+		),
+	})
+);
 
-//         // Store related to the bid
-//         storeId: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "Store",
-//             required: true
-//         },
-
-//         // Owner of the post (who receives the bid)
-//         owner: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "User",
-//             required: true,
-//             index: true
-//         },
-
-//         // User for whom the bid is being placed (optional)
-//         // If null = bid is for the bidder themselves
-//         // If set = bid is for another user
-//         bidForUserId: {
-//             type: mongoose.Schema.Types.ObjectId,
-//             ref: "User",
-//             default: null,
-//             index: true
-//         },
-        
-//         // Bid amount
-//         bidAmount: {
-//             type: Number,
-//             required: true,
-//             min: 1
-//         },
-
-//         // Optional message with the bid
-//         message: {
-//             type: String,
-//             maxlength: 500,
-//             trim: true,
-//             default: ""
-//         }
-//     },
-//     {
-//         timestamps: true
-//     }
-// );
-
-// // Indexes for performance
-// biddingSchema.index({ postId: 1, bidAmount: -1 });
-// biddingSchema.index({ userId: 1, createdAt: -1 });
-// // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Create compound index for performance
-// biddingSchema.index({ postId: 1, userId: 1 });
-
-// biddingSchema.index({ bidForUserId: 1, bidAmount: -1 });
-
-// // Plugin for pagination
-// biddingSchema.plugin(mongooseAggregatePaginate);
-
-// // Pre-save validation
-// biddingSchema.pre('save', async function(next) {
-//     // Prevent user from bidding on their own post
-//     if (this.userId.toString() === this.owner.toString()) {
-//         throw new Error("You cannot bid on your own post");
-//     }
-    
-//     // If bidding for someone else, ensure it's not the post owner
-//     if (this.bidForUserId && this.bidForUserId.toString() === this.owner.toString()) {
-//         throw new Error("Cannot bid for the post owner");
-//     }
-    
-//     next();
-// });
-
-// export const Bidding = mongoose.model("Bidding", biddingSchema);
+export type Bid = typeof bids.$inferSelect;
+export type NewBid = typeof bids.$inferInsert;

@@ -3,7 +3,6 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { staticPlugin } from "@elysiajs/static";
 import { swagger } from "@elysiajs/swagger";
-import { ApiError } from "./utils/ApiError";
 
 // Routes import
 import authRoutes from "./routes/auth.routes";
@@ -17,9 +16,46 @@ import storeCartRoutes  from "./routes/store/store_cart.routes"
 import  storeOrderRoutes  from "./routes/store/store_order.routes";
 import commentRoutes from "./routes/comment.routes";
 import postRoutes from "./routes/post.routes";
+import deviceRoutes from "./routes/device.routes";
+import favouretRoutes from "./routes/favouret.routes";
+import ratingRoutes from "./routes/rating.routes";
+import biddingRoutes from "./routes/bidding.routes";
+import categoryRoutes from "./routes/categoury.routes";
+import notificationRoutes from "./routes/notification.routes";
+import { createBullBoardRoutes } from "./config/bullBoard";
+import { flags } from "./config/flags";
+import {
+  followQueue,
+  orderQueue,
+  paymentQueue,
+  postQueue,
+  profilevisitQueue,
+} from "./MQ/BullMQ/queue/notification.queue";
+import {
+  authEmailQueue,
+  passwordEmailQueue,
+  orderEmailQueue,
+} from "./MQ/BullMQ/queue/email.queue";
+import qstashRoutes from "./MQ/Qstash/routes";
+import { clusterTracking, getClusterStats } from "./middleware/clusterTracking";
+import { handleElysiaError } from "./middleware/errorHandler";
+
+const bullBoardQueues = flags.useQstashQueue
+  ? []
+  : [
+      followQueue(),
+      orderQueue(),
+      paymentQueue(),
+      postQueue(),
+      profilevisitQueue(),
+      authEmailQueue(),
+      passwordEmailQueue(),
+      orderEmailQueue(),
+    ];
 
 
 const app = new Elysia()
+  .use(clusterTracking)
 
   
 
@@ -31,8 +67,8 @@ const app = new Elysia()
         JSON.stringify({
           success: response.success,
           statusCode: response.statusCode,
-           data: response.data,
-          messege: response.messege,
+          data: response.data,
+          message: response.messege,
          
         }),
         {
@@ -47,7 +83,7 @@ const app = new Elysia()
     cors({
       origin: process.env.CORS_URL || "*",
       credentials: true, // needed for cookies to work cross-origin
-      allowedHeaders: ["Content-Type", "Authorization"],
+      allowedHeaders: ["Content-Type", "Authorization", "x-admin-token"],
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     })
   )
@@ -92,71 +128,7 @@ const app = new Elysia()
   )
 
   // ─── Global Error Handler (replaces: app.use(errorHandler)) ──
-  .onError(({ error, set, code }) => {
-    // Handle our custom ApiError
-    if (error instanceof ApiError) {
-      set.status = error.statusCode;
-      return {
-        success: false,
-        statusCode: error.statusCode,
-        message: error.message,
-        errors: error.errors,
-        data: null,
-      };
-    }
-
-    // Handle Elysia validation errors (body/params/query validation)
-    if (code === "VALIDATION") {
-      set.status = 400;
-      return {
-        success: false,
-        statusCode: 400,
-        message: "Validation Error",
-        errors: error.all, // Elysia provides detailed validation errors
-        data: null,
-      };
-    }
-
-    // Handle 404 — Not Found
-    if (code === "NOT_FOUND") {
-      set.status = 404;
-      return {
-        success: false,
-        statusCode: 404,
-        message: "Route not found",
-        data: null,
-      };
-    }
-
-    // Handle parse errors (invalid JSON etc.)
-    if (code === "PARSE") {
-      set.status = 400;
-      return {
-        success: false,
-        statusCode: 400,
-        message: "Invalid request body",
-        data: null,
-      };
-    }
-
-    // Fallback — Internal Server Error
-    console.error("Unhandled error:", error);
-    set.status = 500;
-    return {
-      success: false,
-      statusCode: 500,
-      message:
-        process.env.NODE_ENV === "production"
-          ? "Internal server error"
-          : typeof error === "object" &&
-            error !== null &&
-            "message" in error &&
-            typeof (error as any).message === "string"
-          ? (error as any).message
-          : "Internal server error",
-      data: null,
-    };
-  })
+  .onError(handleElysiaError)
 
   // ─── Health Check (replaces: app.use("/api/v1/healthcheck", ...)) ─
   .get("/api/v1/healthcheck", () => ({
@@ -165,6 +137,7 @@ const app = new Elysia()
     message: "Server is running",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    ...getClusterStats(),
   }))
 
   // ─── Mount Routes (replaces: app.use('/api/v1/users', userRouter)) ─
@@ -178,6 +151,14 @@ const app = new Elysia()
   .use(storeOrderRoutes)
   .use(commentRoutes)
   .use(postRoutes)
+  .use(deviceRoutes)
+  .use(favouretRoutes)
+  .use(ratingRoutes)
+  .use(biddingRoutes)
+  .use(categoryRoutes)
+  .use(notificationRoutes)
+  .use(createBullBoardRoutes(bullBoardQueues))
+  .use(qstashRoutes)
   // ✅ Add this!
   // /api/v1/users/... (user related)
 

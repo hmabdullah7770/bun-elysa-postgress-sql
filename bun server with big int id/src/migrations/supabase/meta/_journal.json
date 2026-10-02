@@ -15,6 +15,20 @@
       "when": 1789152913049,
       "tag": "0001_outstanding_sabretooth",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790623698694,
+      "tag": "0002_silent_scream",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790703202848,
+      "tag": "0003_burly_electro",
+      "breakpoints": true
     }
   ]
 }

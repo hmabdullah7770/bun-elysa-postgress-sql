@@ -1,75 +1,77 @@
-import { ApiError } from "./ApiError";
+import { ApiError } from "./ApiErrors";
 
-const allowedLinks = [
-  "whatsapp",
-  "storeLink",
-  "facebook",
-  "instagram",
-  "productlink",
-] as const;
+interface SocialLinksPayload {
+	whatsapp?: boolean | string;
+	storeLink?: boolean | string;
+	facebook?: boolean | string;
+	instagram?: boolean | string;
+	productlink?: boolean | string;
+	[key: string]: unknown;
+}
 
-type AllowedLink = (typeof allowedLinks)[number];
+interface UpdateOps {
+	$set?: Record<string, unknown>;
+	$unset?: Record<string, string>;
+}
 
-// Bun/TS version of your old helper.
-// - Create: returns { socialLinks }
-// - Update: returns { $set, $unset }
 export const processSocialLinks = (
-  user: any,
-  payload: Record<string, any>,
-  existingPost: any = null
-) => {
-  const socialLinks: Record<string, any> = {};
-  const errors: string[] = [];
+	user: Record<string, unknown>,
+	payload: SocialLinksPayload,
+	existingCard: Record<string, unknown> | null = null
+): { socialLinks: Record<string, unknown> } | UpdateOps => {
+	const socialLinks: Record<string, unknown> = {};
+	const errors: string[] = [];
+	const allowedLinks = [
+		"whatsapp",
+		"storeLink",
+		"facebook",
+		"instagram",
+		"productlink",
+	];
 
-  for (const link of allowedLinks) {
-    const payloadValue = payload?.[link];
-    const enabled =
-      payloadValue === true ||
-      (typeof payloadValue === "string" && payloadValue.toLowerCase() === "true");
+	allowedLinks.forEach((link) => {
+		const payloadValue = payload[link];
+		if (
+			payloadValue === true ||
+			(typeof payloadValue === "string" && payloadValue.toLowerCase() === "true")
+		) {
+			const userValue = user[link];
 
-    if (!enabled) continue;
+			if (typeof userValue === "number" && userValue > 0) {
+				socialLinks[link] = userValue;
+			} else if (typeof userValue === "string" && userValue.trim() !== "") {
+				socialLinks[link] = userValue;
+			} else {
+				errors.push(`${link} not configured in profile`);
+			}
+		}
+	});
 
-    const userValue = user?.[link];
+	if (errors.length > 0) {
+		throw new ApiError(400, errors.join(", "));
+	}
 
-    if (typeof userValue === "number" && userValue > 0) {
-      socialLinks[link] = userValue;
-    } else if (typeof userValue === "string" && userValue.trim() !== "") {
-      socialLinks[link] = userValue;
-    } else {
-      errors.push(`${link} not configured in profile`);
-    }
-  }
+	if (!existingCard) {
+		if (Object.keys(socialLinks).length === 0) {
+			throw new ApiError(400, "At least one social link required");
+		}
+		return { socialLinks };
+	}
 
-  if (errors.length > 0) {
-    throw new ApiError(400, errors.join(", "));
-  }
+	const updateOps: UpdateOps = { $set: {}, $unset: {} };
 
-  // CREATE
-  if (!existingPost) {
-    if (Object.keys(socialLinks).length === 0) {
-      throw new ApiError(400, "At least one social link required");
-    }
-    return { socialLinks };
-  }
+	Object.keys(socialLinks).forEach((link) => {
+		updateOps.$set![link] = socialLinks[link];
+	});
 
-  // UPDATE
-  const updateOps: any = { $set: {}, $unset: {} };
+	allowedLinks.forEach((link) => {
+		if (existingCard[link] && !socialLinks[link] && payload[link] === false) {
+			updateOps.$unset![link] = "";
+		}
+	});
 
-  // add/update enabled links
-  for (const link of Object.keys(socialLinks)) {
-    updateOps.$set[link] = socialLinks[link];
-  }
+	if (Object.keys(updateOps.$set!).length === 0) delete updateOps.$set;
+	if (Object.keys(updateOps.$unset!).length === 0) delete updateOps.$unset;
 
-  // remove links explicitly disabled in payload
-  for (const link of allowedLinks) {
-    if (existingPost?.[link] && !socialLinks[link] && payload?.[link] === false) {
-      updateOps.$unset[link] = "";
-    }
-  }
-
-  if (Object.keys(updateOps.$set).length === 0) delete updateOps.$set;
-  if (Object.keys(updateOps.$unset).length === 0) delete updateOps.$unset;
-
-  return updateOps;
+	return updateOps;
 };
-

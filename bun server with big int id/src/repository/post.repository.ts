@@ -1,4 +1,4 @@
-﻿import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+﻿import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "../db";
 import { post_counters, posts, users, type NewPost } from "../schemas";
 
@@ -119,6 +119,9 @@ export class PostRepository {
     sortType?: SortType | null;
     direction?: Direction | null;
     userIdFilter?: string | null;
+    userIdsFilter?: string[];
+    videosOnly?: boolean;
+    imagesOnly?: boolean;
     isOwnerRequest?: boolean;
   }) {
     const limitNumber = Math.min(Math.max(params.limit || 20, 1), 100);
@@ -145,6 +148,19 @@ export class PostRepository {
       }
     } else {
       whereParts.push(eq(posts.isPublished, true));
+    }
+
+    if (params.userIdsFilter) {
+      whereParts.push(
+        params.userIdsFilter.length
+          ? inArray(posts.owner, params.userIdsFilter)
+          : sql`false`
+      );
+    }
+
+    if (params.videosOnly) whereParts.push(sql`${posts.videocount} > 0`);
+    if (params.imagesOnly) {
+      whereParts.push(sql`${posts.imagecount} > 0 and ${posts.videocount} = 0`);
     }
 
     // Ã¢Å“â€¦ Fixed cursor parsing

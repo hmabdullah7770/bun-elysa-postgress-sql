@@ -1,20 +1,21 @@
-// src/utils/progressStore.ts
+class ProgressStore<T = unknown> {
+	private store: Map<string, T>;
 
-// Simple in-memory store (use Redis in production)
-class ProgressStore {
-  private store = new Map<string, any>();
+	constructor() {
+		this.store = new Map();
+	}
 
-  set(key: string, value: any) {
-    this.store.set(key, value);
-  }
+	set(key: string, value: T): void {
+		this.store.set(key, value);
+	}
 
-  get(key: string) {
-    return this.store.get(key);
-  }
+	get(key: string): T | undefined {
+		return this.store.get(key);
+	}
 
-  delete(key: string) {
-    return this.store.delete(key);
-  }
+	delete(key: string): void {
+		this.store.delete(key);
+	}
 }
 
 export const progressStore = new ProgressStore();

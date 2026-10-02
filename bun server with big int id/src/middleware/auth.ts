@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError";
 import { verifyAccessToken } from "../utils/token";
 import { userRepository } from "../repository/user.repository";
 
-export const authMiddleware = new Elysia({ name: "auth-middleware" }).derive(
+export const createAuthMiddleware = () => new Elysia().derive(
   async ({ headers, cookie }) => {
     const token =
       cookie?.accessToken?.value ||
@@ -40,3 +40,5 @@ export const authMiddleware = new Elysia({ name: "auth-middleware" }).derive(
     }
   }
 );
+
+export const authMiddleware = createAuthMiddleware();

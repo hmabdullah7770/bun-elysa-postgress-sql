@@ -1,6 +1,7 @@
 ﻿import { and, desc, eq, ilike, inArray, lt, gt, sql, or } from "drizzle-orm";
 import { db } from "../db";
 import { comments, users, posts } from "../schemas";
+import { getNextCommentSequence } from "./commentCounter.repository";
 
 type CommentRow = {
   _id: number;
@@ -27,13 +28,7 @@ type CommentRow = {
 
 export class CommentRepository {
   async nextCommentId(): Promise<number> {
-    const result = await db.execute<{ id: string }>(
-      sql`select nextval(pg_get_serial_sequence('comments','_id'))::text as id`
-    );
-    const idStr = (result as any)?.[0]?.id;
-    const id = Number(idStr);
-    if (!Number.isFinite(id)) throw new Error("Failed to allocate comment id");
-    return id;
+    return getNextCommentSequence("commentId");
   }
 
 

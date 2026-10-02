@@ -3,12 +3,22 @@ import { db } from "./db";
 // import { db2 } from "./db"
 import { sql } from "drizzle-orm";
 import { flags } from "./config/flags";  // ← import flags
+import { initializeFirebase } from "./config/firebase";
 
 async function main() {
   try {
+    const firebaseApp = initializeFirebase();
+    if (firebaseApp) console.log("Firebase Admin initialized");
+
     // Verify DB connection before starting server
     await db.execute(sql`SELECT 1`);
     console.log("✅ Database connected successfully");
+
+    if (!flags.useQstashQueue) {
+      await import("./MQ/BullMQ/workers/notification.worker");
+      await import("./MQ/BullMQ/workers/email.worker");
+    }
+    if (flags.mailer) await import("./MQ/BullMQ/config/mailer");
 
     // if (flags.masterDb) {
     //    await db2.execute(sql`SELECT 1`);

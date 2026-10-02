@@ -13,6 +13,9 @@ import { watchHistory }                             from "./watchHistory.schema"
 import { followLists }                              from "./followlist.schema";
 import { posts }                                    from "./post.schema";
 import { comments }                                 from "./comment.schema";
+import { devices }                                  from "./device.schema";
+import { favorites }                                from "./favouret.schema";
+import { ratings }                                  from "./rating.schema";
 
 // ── store
 import { createStore, storeRatings }               from "./store/createStore.schema";
@@ -51,6 +54,9 @@ export const usersRelations = relations(users, ({ many }) => ({
   // content
   posts: many(posts),
   comments: many(comments),
+  devices: many(devices),
+  favorites: many(favorites),
+  ratings: many(ratings),
 }));
 
 // ─────────────────────────────────────────────────────────────
@@ -66,11 +72,12 @@ export const watchHistoryRelations = relations(watchHistory, ({ one }) => ({
 // ─────────────────────────────────────────────────────────────
 // posts
 // ─────────────────────────────────────────────────────────────
-export const postsRelations = relations(posts, ({ one }) => ({
+export const postsRelations = relations(posts, ({ one, many }) => ({
   ownerUser: one(users, {
     fields: [posts.owner],
     references: [users._id],
   }),
+  ratings: many(ratings),
 }));
 
 // ─────────────────────────────────────────────────────────────
@@ -79,6 +86,44 @@ export const postsRelations = relations(posts, ({ one }) => ({
 export const commentsRelations = relations(comments, ({ one }) => ({
   ownerUser: one(users, {
     fields: [comments.owner],
+    references: [users._id],
+  }),
+}));
+
+// ─────────────────────────────────────────────────────────────
+// devices
+// ─────────────────────────────────────────────────────────────
+export const devicesRelations = relations(devices, ({ one }) => ({
+  user: one(users, {
+    fields: [devices.userId],
+    references: [users._id],
+  }),
+}));
+
+// ─────────────────────────────────────────────────────────────
+// favorites
+// ─────────────────────────────────────────────────────────────
+export const favoritesRelations = relations(favorites, ({ one }) => ({
+  post: one(posts, {
+    fields: [favorites.postId],
+    references: [posts._id],
+  }),
+  user: one(users, {
+    fields: [favorites.owner],
+    references: [users._id],
+  }),
+}));
+
+// ─────────────────────────────────────────────────────────────
+// ratings
+// ─────────────────────────────────────────────────────────────
+export const ratingsRelations = relations(ratings, ({ one }) => ({
+  post: one(posts, {
+    fields: [ratings.postId],
+    references: [posts._id],
+  }),
+  user: one(users, {
+    fields: [ratings.owner],
     references: [users._id],
   }),
 }));

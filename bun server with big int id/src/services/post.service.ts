@@ -35,7 +35,13 @@ const getSortValue = (post: any, sortBy: string) => {
 };
 
 export class PostService {
-  async getAllPosts(params: { query: any; userVerified?: any }) {
+  async getAllPosts(params: {
+    query: any;
+    userVerified?: any;
+    userIdsFilter?: string[];
+    videosOnly?: boolean;
+    imagesOnly?: boolean;
+  }) {
     const q = params.query ?? {};
     const limitNumber = Number(q.limit) || 20;
 
@@ -56,6 +62,9 @@ export class PostService {
       sortType,
       direction,
       userIdFilter,
+      userIdsFilter: params.userIdsFilter,
+      videosOnly: params.videosOnly,
+      imagesOnly: params.imagesOnly,
       isOwnerRequest,
     });
 

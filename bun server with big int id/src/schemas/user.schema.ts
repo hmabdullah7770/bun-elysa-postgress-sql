@@ -32,6 +32,7 @@ export const users = pgTable(
     coverImage: text("cover_image"),
     refreshToken: text("refresh_token"),
     otp: text("otp"),
+    fcmToken: text("fcm_token"),
 
     // Social links ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â at least one required (validated in service layer)
     // PostgreSQL unique allows multiple NULLs (replaces sparse:true)

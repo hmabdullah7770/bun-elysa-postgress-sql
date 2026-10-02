@@ -2,8 +2,18 @@
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../db/index";
 import { followLists } from "../schemas/followlist.schema";
+import { users } from "../schemas/user.schema";
 
 export class FollowListRepository {
+  async getFollowingIds(userId: string): Promise<string[]> {
+    const rows = await db
+      .select({ userId: followLists.followingId })
+      .from(followLists)
+      .innerJoin(users, eq(followLists.followingId, users._id))
+      .where(eq(followLists.followerId, userId));
+    return rows.map(({ userId: followingId }) => followingId);
+  }
+
   async getFollowerCount(userId: string): Promise<number> {
     const result = await db
       .select({ count: sql<number>`count(*)` })

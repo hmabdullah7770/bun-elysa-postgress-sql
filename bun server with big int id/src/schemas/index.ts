@@ -1,9 +1,15 @@
 // src/schemas/index.ts
  export * from "./relations"; 
 export * from "./user.schema";
+export * from "./device.schema";
 // export * from "./userStore.schema"; // removed - using createStore instead
 export * from "./watchHistory.schema";
 export * from "./followlist.schema";
+export * from "./favouret.schema";
+export * from "./rating.schema";
+export * from "./bidding.schema";
+export * from "./categoury.schema";
+export * from "./notification.schema";
 
 // ✅ OTP schema exports (named)
 export * from "./otp.schema";
