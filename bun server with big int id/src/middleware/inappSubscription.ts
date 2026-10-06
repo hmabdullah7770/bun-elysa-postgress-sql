@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { subscriptionRepository } from "../repository/subscription.repository";
 import { ApiError } from "../utils/ApiError";
 
 export type ActiveSubscription = { plan?: string } | null;
@@ -15,3 +16,7 @@ export const createInAppSubscriptionMiddleware = (findActiveSubscription: InAppS
       inappPlan: subscription?.plan ?? "free",
     };
   });
+
+export const verifyInAppSubscription = createInAppSubscriptionMiddleware(
+  (userId) => subscriptionRepository.findActiveInApp(userId)
+);

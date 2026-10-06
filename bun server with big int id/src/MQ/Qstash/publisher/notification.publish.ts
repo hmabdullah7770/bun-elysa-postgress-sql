@@ -9,6 +9,7 @@ export const NOTIFICATION_QUEUE_NAMES = {
   PAYMENT: `${process.env.ROOT_URL ?? ""}/api/qstash/notifications/payment`,
   POST: `${process.env.ROOT_URL ?? ""}/api/qstash/notifications/post`,
   PROFILEVISIT: `${process.env.ROOT_URL ?? ""}/api/qstash/notifications/profilevisit`,
+  STORE: `${process.env.ROOT_URL ?? ""}/api/qstash/notifications/store`,
 } as const;
 
 const getQstashClient = () => {

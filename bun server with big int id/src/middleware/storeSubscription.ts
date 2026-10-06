@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { subscriptionRepository } from "../repository/subscription.repository";
 import { ApiError } from "../utils/ApiError";
 import type { ActiveSubscription } from "./inappSubscription";
 
@@ -17,3 +18,7 @@ export const createStoreSubscriptionMiddleware = (findActiveSubscription: StoreS
       };
     }
   );
+
+export const verifyStoreSubscription = createStoreSubscriptionMiddleware(
+  (storeId) => subscriptionRepository.findActiveForStore(storeId)
+);

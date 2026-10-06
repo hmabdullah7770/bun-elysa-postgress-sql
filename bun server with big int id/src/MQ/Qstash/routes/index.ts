@@ -62,6 +62,7 @@ const qstashRoutes = new Elysia({ prefix: "/api/qstash" })
   .post("/notifications/order", notificationHandler, { parse: "none" })
   .post("/notifications/payment", notificationHandler, { parse: "none" })
   .post("/notifications/post", notificationHandler, { parse: "none" })
-  .post("/notifications/profilevisit", notificationHandler, { parse: "none" });
+  .post("/notifications/profilevisit", notificationHandler, { parse: "none" })
+  .post("/notifications/store", notificationHandler, { parse: "none" });
 
 export default flags.useQstashQueue ? qstashRoutes : new Elysia();

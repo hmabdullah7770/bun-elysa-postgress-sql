@@ -21,6 +21,7 @@ const processNotificationJob = async (job: Job) => {
     [QUEUE_NAMES.PAYMENT]: ["payment-done"],
     [QUEUE_NAMES.POST]: ["post-published"],
     [QUEUE_NAMES.PROFILEVISIT]: ["profilevisit"],
+    [QUEUE_NAMES.STORE]: ["store-subscribe", "store-unsubscribe"],
   };
   if (!supportedTypes[job.queueName]?.includes(job.name)) {
     console.warn(`Unknown notification job "${job.name}" on ${job.queueName}`);

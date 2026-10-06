@@ -8,6 +8,7 @@ export const QUEUE_NAMES = {
   PAYMENT: "notifications-payment",
   POST: "notifications-post",
   PROFILEVISIT: "notifications-profilevisit",
+  STORE: "notifications-store",
 } as const;
 
 const queues = new Map<string, Queue>();
@@ -27,6 +28,7 @@ export const orderQueue = () => getQueue(QUEUE_NAMES.ORDER);
 export const paymentQueue = () => getQueue(QUEUE_NAMES.PAYMENT);
 export const postQueue = () => getQueue(QUEUE_NAMES.POST);
 export const profilevisitQueue = () => getQueue(QUEUE_NAMES.PROFILEVISIT);
+export const storeQueue = () => getQueue(QUEUE_NAMES.STORE);
 
 export const addNotificationJob = async (
   queueName: string,

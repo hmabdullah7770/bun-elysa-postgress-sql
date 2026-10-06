@@ -22,6 +22,9 @@ import ratingRoutes from "./routes/rating.routes";
 import biddingRoutes from "./routes/bidding.routes";
 import categoryRoutes from "./routes/categoury.routes";
 import notificationRoutes from "./routes/notification.routes";
+import subscriptionRoutes from "./routes/subscription.routes";
+import videoModerationRoutes from "./routes/videoModeration.routes";
+import storeNotificationRoutes from "./routes/store/store_get_Notification.routes";
 import { createBullBoardRoutes } from "./config/bullBoard";
 import { flags } from "./config/flags";
 import {
@@ -30,6 +33,7 @@ import {
   paymentQueue,
   postQueue,
   profilevisitQueue,
+  storeQueue,
 } from "./MQ/BullMQ/queue/notification.queue";
 import {
   authEmailQueue,
@@ -48,6 +52,7 @@ const bullBoardQueues = flags.useQstashQueue
       paymentQueue(),
       postQueue(),
       profilevisitQueue(),
+      storeQueue(),
       authEmailQueue(),
       passwordEmailQueue(),
       orderEmailQueue(),
@@ -149,6 +154,7 @@ const app = new Elysia()
   .use(storeProductRoutes)
   .use(storeCartRoutes)
   .use(storeOrderRoutes)
+  .use(storeNotificationRoutes)
   .use(commentRoutes)
   .use(postRoutes)
   .use(deviceRoutes)
@@ -157,6 +163,8 @@ const app = new Elysia()
   .use(biddingRoutes)
   .use(categoryRoutes)
   .use(notificationRoutes)
+  .use(subscriptionRoutes)
+  .use(videoModerationRoutes)
   .use(createBullBoardRoutes(bullBoardQueues))
   .use(qstashRoutes)
   // ✅ Add this!
