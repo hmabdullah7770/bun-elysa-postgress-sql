@@ -1,6 +1,6 @@
 // src/routes/store.routes.ts
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../../middleware/auth";
+import { createAuthMiddleware } from "../../middleware/auth";
 import { verifyStoreOwner } from "../../middleware/store";
 import {
   createStore,
@@ -39,7 +39,7 @@ const storeRoutes = new Elysia({ prefix: "/api/v1/stores" })
   // ──────────────── Protected Routes ────────────────
 
   .use(
-    authMiddleware
+    createAuthMiddleware()
 
     // POST /api/v1/stores
     .post("/create", createStore, {
@@ -64,7 +64,7 @@ const storeRoutes = new Elysia({ prefix: "/api/v1/stores" })
       }),
     })
      
-    .use(verifyStoreOwner
+    .use(verifyStoreOwner()
     // PATCH /api/v1/stores/:storeId
     .put("/:storeId", updateStore, {
       params: t.Object({

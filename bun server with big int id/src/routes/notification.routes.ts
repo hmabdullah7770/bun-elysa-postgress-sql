@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 import {
   addNotificationType,
   clearAllNotifications,
@@ -20,7 +20,7 @@ const notificationIdsBody = t.Object({
 });
 
 const notificationRoutes = new Elysia({ prefix: "/api/v1/notifications" }).use(
-  authMiddleware
+  createAuthMiddleware()
     .post("/add/types", addNotificationType, {
       body: t.Object({
         type: t.String({ minLength: 1, maxLength: 100 }),

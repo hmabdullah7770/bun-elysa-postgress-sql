@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 import {
   newAddComment,
   newDeleteComment,
@@ -17,7 +17,7 @@ import {
 } from "../controller/comment.controller";
 
 const commentRoutes = new Elysia({ prefix: "/api/v1/newcomments" }).use(
-  authMiddleware
+  createAuthMiddleware()
     // Remap :storeId → postId before hitting controller
     .get("/:storeId", (ctx) => newGetComments({ ...ctx, params: { postId: ctx.params.storeId } }), {
       params: t.Object({ storeId: t.String() }),
@@ -272,4 +272,3 @@ export default commentRoutes;
 // // );
 
 // export default commentRoutes;
-

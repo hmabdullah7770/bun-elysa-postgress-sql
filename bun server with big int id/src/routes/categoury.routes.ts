@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 import {
   addCategoury,
   deleteCategoury,
@@ -34,7 +34,7 @@ const categoryRoutes = new Elysia({ prefix: "/api/v1/categoury" })
   })
   .get("/allcategoury", getAllCategouryName)
   .get("/unified-feed", getUnifiedFeed, { query: feedQuery })
-  .use(authMiddleware
+  .use(createAuthMiddleware()
     .post("/addcategoury", addCategoury, {
       body: t.Object({ categouryname: t.String({ minLength: 1, maxLength: 255 }) }),
     })

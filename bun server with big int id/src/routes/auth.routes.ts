@@ -1,6 +1,6 @@
 // src/routes/auth.routes.ts
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 
 import {
   verifyEmail,
@@ -108,7 +108,7 @@ const authRoutes = new Elysia({ prefix: "/api/v1/users" })
 
 
 .use(
-    authMiddleware
+    createAuthMiddleware()
       .post("/logout", logOut)
       .post("/change-password", changePassword, {
         body: t.Object({

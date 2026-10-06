@@ -9,7 +9,7 @@ import {
   updateBid,
   updateOtherUserBid,
 } from "../controller/bidding.controller";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 
 const bidBody = t.Object({
   postId: t.Union([t.String(), t.Number()]),
@@ -25,7 +25,7 @@ const updateBody = t.Object({
 });
 
 const biddingRoutes = new Elysia({ prefix: "/api/v1/bids" })
-  .use(authMiddleware)
+  .use(createAuthMiddleware())
   .post("/add-bid", addBidToPost, {
     body: bidBody,
   })

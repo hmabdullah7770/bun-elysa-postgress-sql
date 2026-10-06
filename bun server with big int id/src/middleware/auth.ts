@@ -40,5 +40,3 @@ export const createAuthMiddleware = () => new Elysia().derive(
     }
   }
 );
-
-export const authMiddleware = createAuthMiddleware();

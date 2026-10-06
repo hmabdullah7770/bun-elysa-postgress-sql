@@ -1,12 +1,12 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../../middleware/auth";
+import { createAuthMiddleware } from "../../middleware/auth";
 import {
   getStoreSubscribers,
   toggleStoreNotification,
 } from "../../controller/store/store_get_Notification.controller";
 
 const storeNotificationRoutes = new Elysia({ prefix: "/api/v1/stores" }).use(
-  authMiddleware
+  createAuthMiddleware()
     .post("/get-store-notification/:storeId", toggleStoreNotification, {
       params: t.Object({ storeId: t.String() }),
     })

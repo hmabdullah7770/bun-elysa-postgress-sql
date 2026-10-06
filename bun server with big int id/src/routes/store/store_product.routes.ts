@@ -1,6 +1,6 @@
 // src/routes/store/store_product.routes.ts
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../../middleware/auth";
+import { createAuthMiddleware } from "../../middleware/auth";
 import { verifyStoreOwner } from "../../middleware/store";
 import {
   addProduct,
@@ -31,8 +31,8 @@ const storeProductRoutes = new Elysia({ prefix: "/api/v1/stores" })
   // ✅ Protected Routes
   .group("", (app) =>
     app
-      .use(authMiddleware)
-      .use(verifyStoreOwner)
+      .use(createAuthMiddleware())
+      .use(verifyStoreOwner())
 
       // POST /api/v1/stores/:storeId/products
       .post("/:storeId/products", addProduct, {

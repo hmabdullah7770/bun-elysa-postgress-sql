@@ -1,6 +1,6 @@
 // src/routes/user.routes.ts
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 
 import {
   getuser,
@@ -17,7 +17,7 @@ const userRoutes = new Elysia({ prefix: "/api/v1/users" })
 
   // ──────────────── All Protected Routes ────────────────
   .use(
-     authMiddleware
+     createAuthMiddleware()
   // GET /api/v1/users/current-user
   .get("/current-user", getuser)
 

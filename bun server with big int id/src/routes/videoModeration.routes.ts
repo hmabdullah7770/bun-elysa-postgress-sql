@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 import {
   checkVideoFrames,
   deleteModerationRecord,
@@ -7,7 +7,7 @@ import {
 } from "../controller/videoModeration.controller";
 
 const videoModerationRoutes = new Elysia({ prefix: "/api/v1/moderation" }).use(
-  authMiddleware
+  createAuthMiddleware()
     .post("/check-frames", checkVideoFrames, {
       body: t.Object({
         mediaIndex: t.Union([t.String(), t.Number()]),

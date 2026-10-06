@@ -1,12 +1,12 @@
 // src/routes/store/store_order.routes.ts
 import { Elysia, t } from "elysia";
 import { storeOrderController } from "../../controller/store/store_order.controller";
-import { authMiddleware } from "../../middleware/auth";
+import { createAuthMiddleware } from "../../middleware/auth";
 import { verifyStoreOwner } from "../../middleware/store";
 
 const storeOrderRoutes = new Elysia({ prefix: "/api/v1/stores" })
 
-  .use(authMiddleware
+  .use(createAuthMiddleware()
 
     // ✅ Create order (Customer)
     // POST /api/v1/stores/orders/create
@@ -116,7 +116,7 @@ const storeOrderRoutes = new Elysia({ prefix: "/api/v1/stores" })
     )
 
     // ─── Store Owner Protected Routes ─────────────────────────────────────────
-    .use(verifyStoreOwner
+    .use(verifyStoreOwner()
 
       // ✅ Get all orders for a store (Store Owner)
       // GET /api/v1/stores/orders/store/:storeId

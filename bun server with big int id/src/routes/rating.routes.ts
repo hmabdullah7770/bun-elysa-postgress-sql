@@ -7,12 +7,12 @@ import {
   getUserRatingForPost,
   updateRating,
 } from "../controller/rating.controller";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 import decompressRequestBody from "../middleware/decompressRequestBody";
 
 const ratingRoutes = new Elysia({ prefix: "/api/v1/rating" })
   .use(decompressRequestBody)
-  .use(authMiddleware)
+  .use(createAuthMiddleware())
   .get("/:postId", getPostRatings, {
     params: t.Object({ postId: t.String() }),
     query: t.Object({

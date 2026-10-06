@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../middleware/auth";
+import { createAuthMiddleware } from "../middleware/auth";
 import {
   deletePost,
   getAllPosts,
@@ -13,7 +13,7 @@ import {
 import { progressStore } from "../utils/progressStore";
 
 const postRoutes = new Elysia({ prefix: "/api/v1/post" })
-  .use(authMiddleware
+  .use(createAuthMiddleware()
 
   // SSE progress
   .get("/progress", async ({ userVerified }: any) => {
@@ -408,4 +408,3 @@ export default postRoutes;
 //   });
 
 // export default postRoutes;
-

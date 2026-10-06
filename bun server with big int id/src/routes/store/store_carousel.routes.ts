@@ -1,5 +1,5 @@
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../../middleware/auth";
+import { createAuthMiddleware } from "../../middleware/auth";
 import { verifyStoreOwner } from "../../middleware/store";
 import {
   createCarousel,
@@ -11,14 +11,14 @@ import {
 const storeCarouselRoutes = new Elysia({ prefix: "/api/v1/stores" })
 
 // Protected + owner only
-  .use(authMiddleware
+  .use(createAuthMiddleware()
   // GET /api/v1/stores/:storeId/carousels  — public
   .get("/:storeId/carousels", getStoreCarousels, {
     params: t.Object({ storeId: t.String() }),
   })
 
   
-    .use(verifyStoreOwner
+    .use(verifyStoreOwner()
 
   // POST /api/v1/stores/:storeId/carousels/create
   .post("/carousels/:storeId/create", createCarousel, {
@@ -98,4 +98,3 @@ export default storeCarouselRoutes;
 // )
 
 // export default storeCarouselRoutes;
-

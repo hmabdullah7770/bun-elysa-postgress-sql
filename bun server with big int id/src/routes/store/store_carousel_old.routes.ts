@@ -1,6 +1,6 @@
 // src/routes/store/store_carousel_old.routes.ts
 import { Elysia, t } from "elysia";
-import { authMiddleware } from "../../middleware/auth";
+import { createAuthMiddleware } from "../../middleware/auth";
 import { verifyStoreOwner } from "../../middleware/store";
 import {
   createCarouselOld,
@@ -11,7 +11,7 @@ import {
 
 const storeCarouselOldRoutes = new Elysia({ prefix: "/api/v1/stores" })
 
-.use(authMiddleware
+.use(createAuthMiddleware()
   // ✅ Public Route
   .get("/:storeId/oldcarousels", getStoreCarouselsOld, {
     params: t.Object({ storeId: t.String() }),
@@ -20,7 +20,7 @@ const storeCarouselOldRoutes = new Elysia({ prefix: "/api/v1/stores" })
   // ✅ Protected Routes
  
       
-      .use(verifyStoreOwner
+      .use(verifyStoreOwner()
 
       // POST /api/v1/stores/oldcarousels/:storeId/create
       .post("/oldcarousels/:storeId/create", createCarouselOld, {
