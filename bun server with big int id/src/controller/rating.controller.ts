@@ -51,13 +51,9 @@ export const addRating = async ({ body, userVerified }: any) => {
     ) {
       throw new ApiError(400, `Rating for postId ${item.postId} must be between 1 and 5, or null to unrate`);
     }
-    if (item.comment !== undefined && item.comment !== null && typeof item.comment !== "string") {
-      throw new ApiError(400, "Rating comment must be a string or null");
-    }
     return {
       postId,
       rating: item.rating as number | null,
-      ...(item.comment !== undefined ? { comment: item.comment } : {}),
     };
   });
 

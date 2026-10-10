@@ -22,6 +22,8 @@ const storeOrderRoutes = new Elysia({ prefix: "/api/v1/stores" })
             t.Object({
               productId: t.String(),
               quantity: t.Number({ minimum: 1 }),
+              productName: t.Optional(t.String()),
+              productImages: t.Optional(t.Array(t.String())),
               color: t.Optional(t.Nullable(t.String())),
               size: t.Optional(t.Nullable(t.String())),
             })
@@ -59,6 +61,15 @@ const storeOrderRoutes = new Elysia({ prefix: "/api/v1/stores" })
           page: t.Optional(t.String()),
           limit: t.Optional(t.String()),
           storeId: t.Optional(t.String()), // optional filter
+          status: t.Optional(
+            t.Union([
+              t.Literal("pending"),
+              t.Literal("processing"),
+              t.Literal("shipped"),
+              t.Literal("delivered"),
+              t.Literal("cancelled"),
+            ])
+          ),
         }),
       }
     )
@@ -89,6 +100,19 @@ const storeOrderRoutes = new Elysia({ prefix: "/api/v1/stores" })
     // ✅ Get a single order by ID
     // GET /api/v1/stores/orders/:orderId
     .get(
+      "/orders/:orderId/:storeId",
+      async ({ params, userVerified }) => {
+        return await storeOrderController.getOrderById(params, userVerified);
+      },
+      {
+        params: t.Object({
+          orderId: t.String(),
+          storeId: t.String(),
+        }),
+      }
+    )
+
+    .get(
       "/orders/:orderId",
       async ({ params, userVerified }) => {
         return await storeOrderController.getOrderById(params, userVerified);
@@ -112,6 +136,16 @@ const storeOrderRoutes = new Elysia({ prefix: "/api/v1/stores" })
           orderId: t.String(),
           storeId: t.String(),
         }),
+      }
+    )
+
+    .delete(
+      "/order/:orderId",
+      async ({ params, userVerified }) => {
+        return await storeOrderController.cancelOrderByCustomer(params, userVerified);
+      },
+      {
+        params: t.Object({ orderId: t.String() }),
       }
     )
 

@@ -7,7 +7,6 @@ import { users } from "../schemas/user.schema";
 export type RatingInput = {
   postId: number;
   rating: number | null;
-  comment?: string | null;
 };
 
 type RatingPatch = {
@@ -152,15 +151,11 @@ export class RatingRepository {
           continue;
         }
 
-        const comment = entry.comment?.trim();
         if (previous) {
           await tx
             .update(ratings)
             .set({
               rating: entry.rating,
-              ...(entry.comment !== undefined
-                ? { comment: comment ?? null }
-                : {}),
               updatedAt: new Date(),
             })
             .where(eq(ratings._id, previous._id));
@@ -169,7 +164,6 @@ export class RatingRepository {
             postId: entry.postId,
             owner,
             rating: entry.rating,
-            ...(entry.comment !== undefined ? { comment: comment ?? null } : {}),
           });
         }
 
@@ -194,7 +188,8 @@ export class RatingRepository {
       .from(ratings)
       .where(and(eq(ratings._id, id), eq(ratings.owner, owner)))
       .limit(1);
-    if (!initial[0]) return null;
+    const initialRating = initial[0];
+    if (!initialRating) return null;
 
     return db.transaction(async (tx) => {
       const lockedPosts = await tx
@@ -204,7 +199,7 @@ export class RatingRepository {
           ratingCount: posts.ratingCount,
         })
         .from(posts)
-        .where(eq(posts._id, initial[0].postId))
+        .where(eq(posts._id, initialRating.postId))
         .for("update")
         .limit(1);
       if (!lockedPosts[0]) return null;
@@ -263,7 +258,8 @@ export class RatingRepository {
       .from(ratings)
       .where(and(eq(ratings._id, id), eq(ratings.owner, owner)))
       .limit(1);
-    if (!initial[0]) return null;
+    const initialRating = initial[0];
+    if (!initialRating) return null;
 
     return db.transaction(async (tx) => {
       const lockedPosts = await tx
@@ -273,7 +269,7 @@ export class RatingRepository {
           ratingCount: posts.ratingCount,
         })
         .from(posts)
-        .where(eq(posts._id, initial[0].postId))
+        .where(eq(posts._id, initialRating.postId))
         .for("update")
         .limit(1);
       if (!lockedPosts[0]) return null;

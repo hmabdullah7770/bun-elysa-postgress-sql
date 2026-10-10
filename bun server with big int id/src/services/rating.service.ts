@@ -1,6 +1,12 @@
 import { ratingRepository, type RatingInput } from "../repository/rating.repository";
 import { ApiError } from "../utils/ApiError";
 
+const serializeRating = <T extends { _id: number; postId: number }>(rating: T) => ({
+  ...rating,
+  _id: String(rating._id),
+  postId: String(rating.postId),
+});
+
 export class RatingService {
   async getPostRatings(params: {
     postId: number;
@@ -19,7 +25,9 @@ export class RatingService {
     const totalPages = Math.ceil(totalRatings / params.limit);
 
     return {
-      ratings: rows.map(({ rating, owner }) => ({ ...rating, owner })),
+      ratings: rows.map(({ rating, owner }) =>
+        serializeRating({ ...rating, owner })
+      ),
       summary: {
         averageRating: Number(post.averageRating),
         totalRatings: post.ratingCount,
@@ -40,13 +48,19 @@ export class RatingService {
     if (results.length === 0) {
       throw new ApiError(404, "No published posts found for the given IDs");
     }
-    return { processed: results.length, results };
+    return {
+      processed: results.length,
+      results: results.map((result) => ({
+        ...result,
+        postId: String(result.postId),
+      })),
+    };
   }
 
   async updateRating(id: number, owner: string, patch: { rating?: number; comment?: string | null }) {
     const updated = await ratingRepository.updateById(id, owner, patch);
     if (!updated) throw new ApiError(404, "Rating not found");
-    return { ...updated.rating, owner: updated.owner };
+    return serializeRating({ ...updated.rating, owner: updated.owner });
   }
 
   async deleteRating(id: number, owner: string) {
@@ -70,7 +84,8 @@ export class RatingService {
   }
 
   async getUserRating(postId: number, owner: string) {
-    return ratingRepository.findByPostAndOwner(postId, owner);
+    const rating = await ratingRepository.findByPostAndOwner(postId, owner);
+    return rating ? serializeRating(rating) : null;
   }
 }
 

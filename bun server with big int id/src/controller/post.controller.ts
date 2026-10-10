@@ -14,9 +14,22 @@ export const getAllPosts = async ({ query, userVerified }: any) => {
   return new ApiResponse(200, data, message);
 };
 
+export const searchPosts = async ({ query, userVerified }: any) => {
+  const result = await postService.searchPosts(query, userVerified?._id);
+  return new ApiResponse(200, result.data, result.message);
+};
+
 export const publishPost = async ({ body, userVerified }: any) => {
   const post = await postService.publishPost({ body, userVerified });
-  return new ApiResponse(201, post, "Post created successfully");
+  return new Response(
+    JSON.stringify({
+      success: true,
+      statusCode: 201,
+      data: post,
+      message: "Post created successfully",
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } }
+  );
 };
 
 export const getPostById = async ({ params }: any) => {
@@ -69,4 +82,3 @@ export const removeMediaFiles = async ({ params, body, userVerified }: any) => {
   });
   return new ApiResponse(200, data, "Media files removed successfully");
 };
-

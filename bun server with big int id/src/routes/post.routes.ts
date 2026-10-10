@@ -9,8 +9,18 @@ import {
   updatePost,
   incrementSocialLinkView,
   removeMediaFiles,
+  searchPosts,
 } from "../controller/post.controller";
 import { progressStore } from "../utils/progressStore";
+
+const socialLinkRoutes = new Elysia({ prefix: "/api/v1/post" })
+  .get("/:postId/social/:linkType", (ctx) =>
+    incrementSocialLinkView({
+      ...ctx,
+      params: { postId: ctx.params.postId, linkType: ctx.params.linkType },
+    }), {
+    params: t.Object({ postId: t.String(), linkType: t.String() }),
+  });
 
 const postRoutes = new Elysia({ prefix: "/api/v1/post" })
   .use(createAuthMiddleware()
@@ -88,6 +98,18 @@ const postRoutes = new Elysia({ prefix: "/api/v1/post" })
     }),
   })
 
+  .get("/posts/search", searchPosts, {
+    query: t.Object({
+      search: t.Optional(t.String()),
+      adminpassword: t.Optional(t.String()),
+      from: t.Optional(t.String()),
+      size: t.Optional(t.String()),
+      addcomment: t.Optional(t.String()),
+      filtername: t.Optional(t.String()),
+      category: t.Optional(t.String()),
+    }),
+  })
+
   // Create post
   .post("/create", publishPost, {
     body: t.Object({
@@ -95,6 +117,8 @@ const postRoutes = new Elysia({ prefix: "/api/v1/post" })
       description: t.Optional(t.String()),
       category: t.String(),
       pattern: t.Optional(t.String()),
+      postType: t.Optional(t.String()),
+      videoModerationIds: t.Optional(t.Any()),
 
       storeisActive: t.Optional(t.Any()),
       storeIconSize: t.Optional(t.String()),
@@ -147,27 +171,27 @@ const postRoutes = new Elysia({ prefix: "/api/v1/post" })
   })
 
   // Toggle publish — static segment first, no conflict
-  .patch("/toggle/publish/:storeId", (ctx) =>
-    togglePublishStatus({ ...ctx, params: { postId: ctx.params.storeId } }), {
-    params: t.Object({ storeId: t.String() }),
+  .patch("/toggle/publish/:postId", (ctx) =>
+    togglePublishStatus({ ...ctx, params: { postId: ctx.params.postId } }), {
+    params: t.Object({ postId: t.String() }),
   })
 
   // Get a specific post
-  .get("/:storeId", (ctx) =>
-    getPostById({ ...ctx, params: { postId: ctx.params.storeId } }), {
-    params: t.Object({ storeId: t.String() }),
+  .get("/:postId", (ctx) =>
+    getPostById({ ...ctx, params: { postId: ctx.params.postId } }), {
+    params: t.Object({ postId: t.String() }),
   })
 
   // Delete post
-  .delete("/:storeId", (ctx) =>
-    deletePost({ ...ctx, params: { postId: ctx.params.storeId } }), {
-    params: t.Object({ storeId: t.String() }),
+  .delete("/:postId", (ctx) =>
+    deletePost({ ...ctx, params: { postId: ctx.params.postId } }), {
+    params: t.Object({ postId: t.String() }),
   })
 
   // Update post
-  .patch("/:storeId", (ctx) =>
-    updatePost({ ...ctx, params: { postId: ctx.params.storeId } }), {
-    params: t.Object({ storeId: t.String() }),
+  .patch("/:postId", (ctx) =>
+    updatePost({ ...ctx, params: { postId: ctx.params.postId } }), {
+    params: t.Object({ postId: t.String() }),
     body: t.Object({
       title: t.Optional(t.String()),
       description: t.Optional(t.String()),
@@ -178,22 +202,41 @@ const postRoutes = new Elysia({ prefix: "/api/v1/post" })
       facebook: t.Optional(t.Any()),
       instagram: t.Optional(t.Any()),
       productlink: t.Optional(t.Any()),
+      facebookurl: t.Optional(t.String()),
+      instagramurl: t.Optional(t.String()),
+      whatsappnumberurl: t.Optional(t.String()),
+      storelinkurl: t.Optional(t.String()),
+      imageSizes: t.Optional(t.Any()),
+      videoSizes: t.Optional(t.Any()),
+      autoplay1: t.Optional(t.Any()),
+      autoplay2: t.Optional(t.Any()),
+      autoplay3: t.Optional(t.Any()),
+      autoplay4: t.Optional(t.Any()),
+      autoplay5: t.Optional(t.Any()),
+      imageFile1: t.Optional(t.File()),
+      imageFile2: t.Optional(t.File()),
+      imageFile3: t.Optional(t.File()),
+      imageFile4: t.Optional(t.File()),
+      imageFile5: t.Optional(t.File()),
+      videoFile1: t.Optional(t.File()),
+      videoFile2: t.Optional(t.File()),
+      videoFile3: t.Optional(t.File()),
+      videoFile4: t.Optional(t.File()),
+      videoFile5: t.Optional(t.File()),
+      thumbnail1: t.Optional(t.File()),
+      thumbnail2: t.Optional(t.File()),
+      thumbnail3: t.Optional(t.File()),
+      thumbnail4: t.Optional(t.File()),
+      thumbnail5: t.Optional(t.File()),
+      audioFiles: t.Optional(t.Any()),
+      song: t.Optional(t.Any()),
     }),
   })
 
-  // Increment social link view count
-  .get("/:storeId/social/:linkType", (ctx) =>
-    incrementSocialLinkView({
-      ...ctx,
-      params: { postId: ctx.params.storeId, linkType: ctx.params.linkType },
-    }), {
-    params: t.Object({ storeId: t.String(), linkType: t.String() }),
-  })
-
   // Remove media
-  .patch("/:storeId/remove-media", (ctx) =>
-    removeMediaFiles({ ...ctx, params: { postId: ctx.params.storeId } }), {
-    params: t.Object({ storeId: t.String() }),
+  .patch("/:postId/remove-media", (ctx) =>
+    removeMediaFiles({ ...ctx, params: { postId: ctx.params.postId } }), {
+    params: t.Object({ postId: t.String() }),
     body: t.Object({
       imageUrls: t.Optional(t.Any()),
       videoUrls: t.Optional(t.Any()),
@@ -201,7 +244,7 @@ const postRoutes = new Elysia({ prefix: "/api/v1/post" })
     }),
   })
   )
-export default postRoutes;
+export default new Elysia().use(socialLinkRoutes).use(postRoutes);
 
 
 // import { Elysia, t } from "elysia";

@@ -1,6 +1,7 @@
 // src/routes/auth.routes.ts
 import { Elysia, t } from "elysia";
 import { createAuthMiddleware } from "../middleware/auth";
+import { strictLimiter } from "../middleware/rateLimiter";
 
 import {
   verifyEmail,
@@ -14,7 +15,36 @@ import {
   reSendOtp,
   resetPassword,
   forgetPassword,
+  updateFCMToken,
 } from "../controller/auth.controller";
+
+const registerRoute = new Elysia({ prefix: "/api/v1/users" })
+  .use(strictLimiter)
+  .post("/register", registerUser, {
+    body: t.Object({
+      username: t.String(),
+      email: t.String({ format: "email" }),
+      otp: t.String(),
+      password: t.String(),
+      fullName: t.Optional(t.String()),
+      bio: t.Optional(t.String()),
+      gender: t.Optional(
+        t.Union([
+          t.Literal("male"),
+          t.Literal("female"),
+          t.Literal("transgender"),
+          t.Literal("other"),
+        ])
+      ),
+      whatsapp: t.Optional(t.String()),
+      storeLink: t.Optional(t.String()),
+      facebook: t.Optional(t.String()),
+      instagram: t.Optional(t.String()),
+      productlink: t.Optional(t.String()),
+      avatar: t.File(),
+      coverImage: t.Optional(t.File()),
+    }),
+  });
 
 const authRoutes = new Elysia({ prefix: "/api/v1/users" })
 
@@ -42,39 +72,13 @@ const authRoutes = new Elysia({ prefix: "/api/v1/users" })
     }),
   })
 
-  // POST /api/v1/users/register (with file upload — avatar required, coverImage optional)
-  .post("/register", registerUser, {
-    body: t.Object({
-      username: t.String(),
-      email: t.String({ format: "email" }),
-      otp: t.String(),
-      password: t.String(),
-      fullName: t.Optional(t.String()),
-      bio: t.Optional(t.String()),
-      gender: t.Optional(
-        t.Union([
-          t.Literal("male"),
-          t.Literal("female"),
-          t.Literal("transgender"),
-          t.Literal("other"),
-        ])
-      ),
-      whatsapp: t.Optional(t.String()),
-      storeLink: t.Optional(t.String()),
-      facebook: t.Optional(t.String()),
-      instagram: t.Optional(t.String()),
-      productlink: t.Optional(t.String()),
-      avatar: t.File(),
-      coverImage: t.Optional(t.File()),
-    }),
-  })
-
   // POST /api/v1/users/login
   .post("/login", loginUser, {
     body: t.Object({
       email: t.Optional(t.String()),
       username: t.Optional(t.String()),
       password: t.String(),
+      fcmToken: t.Optional(t.String()),
     }),
   })
 
@@ -110,7 +114,12 @@ const authRoutes = new Elysia({ prefix: "/api/v1/users" })
 .use(
     createAuthMiddleware()
       .post("/logout", logOut)
-      .post("/change-password", changePassword, {
+    .patch("/update-fcm", updateFCMToken, {
+      body: t.Object({
+        fcmToken: t.String(),
+      }),
+    })
+    .post("/change-password", changePassword, {
         body: t.Object({
           oldpassword: t.String(),
           newpassword: t.String(),
@@ -121,4 +130,4 @@ const authRoutes = new Elysia({ prefix: "/api/v1/users" })
 
   
 
-export default authRoutes;
+export default new Elysia().use(authRoutes).use(registerRoute);

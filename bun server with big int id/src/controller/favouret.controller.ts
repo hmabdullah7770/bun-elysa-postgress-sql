@@ -72,7 +72,7 @@ export const getUserFavourets = async ({ userVerified }: any) => {
     200,
     {
       total: favorites.length,
-      postIds: favorites.map(({ postId }) => postId),
+      postIds: favorites.map(({ postId }) => String(postId)),
     },
     "Favourites fetched successfully"
   );

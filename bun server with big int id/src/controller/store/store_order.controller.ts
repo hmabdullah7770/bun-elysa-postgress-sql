@@ -63,8 +63,12 @@ export const storeOrderController = {
   },
 
   // âœ… Get order by ID
-  async getOrderById(params: { orderId: string }, user: any) {
-    const order = await storeOrderService.getOrderById(Number(params.orderId));
+  async getOrderById(params: { orderId: string; storeId?: string }, user: any) {
+    const order = await storeOrderService.getOrderById(
+      Number(params.orderId),
+      user._id,
+      params.storeId
+    );
     return new ApiResponse(200, order, "Order retrieved successfully");
   },
 
@@ -90,14 +94,15 @@ export const storeOrderController = {
   // âœ… Get customer orders â€” all stores (dynamic, optional storeId as query param)
   // Mirrors old getCustomerOrders
   async getCustomerOrders(
-    query: { page?: string; limit?: string; storeId?: string },
+    query: { page?: string; limit?: string; storeId?: string; status?: string },
     user: any
   ) {
     const result = await storeOrderService.getCustomerOrders(
       user._id,
       Number(query.page || "1"),
       Number(query.limit || "10"),
-      query.storeId
+      query.storeId,
+      query.status as any
     );
 
     const message = query.storeId
@@ -116,9 +121,7 @@ export const storeOrderController = {
   ) {
     const result = await storeOrderService.getCustomerOrdersFromOneStore(
       user._id,
-      params.storeId,
-      Number(query.page || "1"),
-      Number(query.limit || "10")
+      params.storeId
     );
 
     return new ApiResponse(
@@ -130,7 +133,7 @@ export const storeOrderController = {
 
   // âœ… Cancel order by customer (only pending orders)
   async cancelOrderByCustomer(
-    params: { orderId: string; storeId: string },
+    params: { orderId: string; storeId?: string },
     user: any
   ) {
     const order = await storeOrderService.cancelOrderByCustomer(

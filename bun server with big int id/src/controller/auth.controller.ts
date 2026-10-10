@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse";
 export const verifyEmail = async ({ body }: { body: { email: string } }) => {
   const result = await authService.verifyEmail(body.email);
   return new ApiResponse(201, {
-    message: "OTP sent to your email",
+    messege: "OTP sent to your email",
     otp: result.otp,
   });
 };
@@ -14,7 +14,7 @@ export const matchUsername = async ({ params }: { params: { username: string } }
   await authService.checkUsername(params.username);
   return new ApiResponse(
     201,
-    `Successfully. You can take ${params.username} as username`
+    `Successfull.You can take ${params.username} as username`
   );
 };
 
@@ -52,13 +52,14 @@ export const loginUser = async ({
   cookie,
   set,
 }: {
-  body: { email?: string; username?: string; password: string };
+  body: { email?: string; username?: string; password: string; fcmToken?: string };
   cookie: any;
   set: any;
 }) => {
   const result = await authService.login(
     body.email || body.username || "",
-    body.password
+    body.password,
+    body.fcmToken
   );
 
   cookie.accessToken.set({
@@ -85,7 +86,7 @@ export const loginUser = async ({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
     },
-    { message: "User logged in successfully" }
+    { messege: "User logged in successfully" }
   );
 };
 
@@ -178,7 +179,7 @@ export const forgetPassword = async ({
 }) => {
   const result = await authService.forgetPassword(body.email);
   return new ApiResponse(201, {
-    message: `OTP sent to your email ${result.otp}`,
+    messege: `OTP sent to your email ${result.otp}`,
   });
 };
 
@@ -188,7 +189,7 @@ export const resetPassword = async ({
   body: { email: string; otp: string; newpassword: string };
 }) => {
   await authService.resetPassword(body.email, body.otp, body.newpassword);
-  return new ApiResponse(201, "Password reset successfully");
+  return new ApiResponse(201, "password reset successfully");
 };
 
 export const reSendOtp = async ({
@@ -196,12 +197,8 @@ export const reSendOtp = async ({
 }: {
   body: { email: string };
 }) => {
-  // Reuse verifyEmail or create separate resend logic
-  const result = await authService.verifyEmail(body.email);
-  return new ApiResponse(201, {
-    message: "OTP re-sent successfully",
-    otp: result.otp,
-  });
+  await authService.resendOtp(body.email);
+  return new ApiResponse(201, "otp re-send successfully");
 };
 
 // export const changePassword = async ({
@@ -228,4 +225,15 @@ export const changePassword = async ({ body, userVerified }: any) => {
     body.newpassword
   );
   return new ApiResponse(200, "Password changed successfully");
+};
+
+export const updateFCMToken = async ({
+  body,
+  userVerified,
+}: {
+  body: { fcmToken: string };
+  userVerified: { _id: string };
+}) => {
+  await authService.updateFcmToken(userVerified._id, body.fcmToken);
+  return new ApiResponse(200, {}, "FCM token updated successfully");
 };

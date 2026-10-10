@@ -30,10 +30,18 @@ interface RemoveFromStoreCartInput {
 
 // â”€â”€â”€ Response Interfaces â”€â”€â”€
 interface CartItemResponse {
-  productId: number;   // âœ… string (UUID)
+  _id: number;
+  productId: number | null;
+  productName: string | null;
+  productImages: string[];
+  productPrice: number;
+  finalPrice: number;
+  productDiscount: number;
+  stock: number;
+  category: string | null;
   quantity: number;
   color: {
-    _id: number;
+    _id: number | null;
     color: string | null;
     index: number | null;
   } | null;
@@ -177,7 +185,9 @@ const productIds = [
   const productMap = new Map(products.map((p) => [p._id, p]));
 
   const items = cart.items.map((item) => {
-    const product = productMap.get(item.productId as number);
+    const product = item.productId == null
+      ? undefined
+      : productMap.get(item.productId);
 
     const productPrice = Number(product?.productPrice ?? 0);
     const finalPrice = Number(product?.finalPrice ?? productPrice);
@@ -186,7 +196,7 @@ const productIds = [
 
     return {
       _id :item._id,
-      productId: item.productId as number,
+      productId: item.productId,
       productName: product?.productName ?? null,
       productImages: product?.productImages ?? [],
       productPrice,

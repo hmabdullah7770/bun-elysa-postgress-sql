@@ -1,6 +1,11 @@
 import { notificationRepository } from "../repository/notification.repository";
 import { ApiError } from "../utils/ApiError";
 
+const serializeIdentity = <T extends { _id: number }>(record: T) => ({
+  ...record,
+  _id: String(record._id),
+});
+
 export type CreateNotificationInput = {
   recipient: string;
   sender?: string | null;
@@ -53,6 +58,7 @@ export class NotificationService {
     return {
       notifications: rows.map(({ notification, sender, store }) => ({
         ...notification,
+        _id: String(notification._id),
         sender: sender?._id ? sender : null,
         store: store?._id ? store : null,
       })),
@@ -76,9 +82,11 @@ export class NotificationService {
   }
 
   async markAsRead(recipient: string, ids: number[]) {
-    const updated = await notificationRepository.markIdsRead(recipient, ids);
-    if (!updated.length) throw new ApiError(404, "No notifications found to update");
-    return { modifiedCount: updated.length };
+    const result = await notificationRepository.markIdsRead(recipient, ids);
+    if (result.matchedCount === 0) {
+      throw new ApiError(404, "No notifications found to update");
+    }
+    return { modifiedCount: result.modifiedCount };
   }
 
   async markAllAsRead(recipient: string) {
@@ -109,17 +117,18 @@ export class NotificationService {
       description: input.description?.trim() ?? "",
     });
     if (!result) throw new ApiError(409, `Notification type "${type}" already exists`);
-    return result;
+    return serializeIdentity(result);
   }
 
   async getNotificationTypes(includeInactive: boolean) {
-    return notificationRepository.listTypes(includeInactive);
+    const types = await notificationRepository.listTypes(includeInactive);
+    return types.map(serializeIdentity);
   }
 
   async updateNotificationTypeStatus(id: number, isActive: boolean) {
     const result = await notificationRepository.updateTypeStatus(id, isActive);
     if (!result) throw new ApiError(404, "Notification type not found");
-    return result;
+    return serializeIdentity(result);
   }
 }
 

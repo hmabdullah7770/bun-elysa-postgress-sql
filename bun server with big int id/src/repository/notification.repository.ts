@@ -91,11 +91,29 @@ export class NotificationRepository {
   }
 
   async markIdsRead(recipient: string, ids: number[]) {
-    return db
+    const matchingRows = await db
+      .select({ _id: notifications._id })
+      .from(notifications)
+      .where(and(eq(notifications.recipient, recipient), inArray(notifications._id, ids)));
+    if (matchingRows.length === 0) {
+      return { matchedCount: 0, modifiedCount: 0 };
+    }
+
+    const updatedRows = await db
       .update(notifications)
       .set({ isRead: true, updatedAt: new Date() })
-      .where(and(eq(notifications.recipient, recipient), inArray(notifications._id, ids)))
+      .where(
+        and(
+          eq(notifications.recipient, recipient),
+          inArray(notifications._id, ids),
+          eq(notifications.isRead, false)
+        )
+      )
       .returning({ _id: notifications._id });
+    return {
+      matchedCount: matchingRows.length,
+      modifiedCount: updatedRows.length,
+    };
   }
 
   async markAllRead(recipient: string) {

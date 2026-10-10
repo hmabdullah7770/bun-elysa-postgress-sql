@@ -16,28 +16,34 @@ import {
   getCommentLikeStatus,
 } from "../controller/comment.controller";
 
-const commentRoutes = new Elysia({ prefix: "/api/v1/newcomments" }).use(
-  createAuthMiddleware()
-    // Remap :storeId → postId before hitting controller
-    .get("/:storeId", (ctx) => newGetComments({ ...ctx, params: { postId: ctx.params.storeId } }), {
-      params: t.Object({ storeId: t.String() }),
-    })
-    .post("/:storeId", (ctx) => newAddComment({ ...ctx, params: { postId: ctx.params.storeId } }), {
-      params: t.Object({ storeId: t.String() }),
-      body: t.Object({
-        content: t.Optional(t.String()),
-        pinned: t.Optional(t.Union([t.Boolean(), t.String()])),
-        audioComment: t.Optional(t.File()),
-        videoComment: t.Optional(t.File()),
-        sticker: t.Optional(t.File()),
-        fileComment: t.Optional(t.File()),
-        imageComment: t.Optional(t.File()),
-      }),
-    })
+const addCommentOptions = {
+  params: t.Object({ postId: t.String() }),
+  body: t.Object({
+    content: t.Optional(t.String()),
+    pinned: t.Optional(t.Union([t.Boolean(), t.String()])),
+    audioComment: t.Optional(t.File()),
+    videoComment: t.Optional(t.File()),
+    sticker: t.Optional(t.File()),
+    fileComment: t.Optional(t.File()),
+    imageComment: t.Optional(t.File()),
+  }),
+};
 
-    // Remap :storeId → commentId before hitting controller
-    .patch("/:storeId", (ctx) => newUpdateComment({ ...ctx, params: { commentId: ctx.params.storeId } }), {
-      params: t.Object({ storeId: t.String() }),
+const addCommentBody = addCommentOptions.body;
+
+const commentRoutes = new Elysia({ prefix: "/api/v1/newcomment" }).use(
+  createAuthMiddleware()
+    .get("/:id", (ctx) => newGetComments({ ...ctx, params: { postId: ctx.params.id } }), {
+      params: t.Object({ id: t.String() }),
+    })
+    .post("/:id", (ctx) => newAddComment({ ...ctx, params: { postId: ctx.params.id } }), {
+      params: t.Object({ id: t.String() }),
+      body: addCommentBody,
+    })
+    .post("/post/:postId", newAddComment, addCommentOptions)
+
+    .patch("/:id", (ctx) => newUpdateComment({ ...ctx, params: { commentId: ctx.params.id } }), {
+      params: t.Object({ id: t.String() }),
       body: t.Object({
         content: t.Optional(t.String()),
         audioComment: t.Optional(t.File()),
@@ -45,15 +51,15 @@ const commentRoutes = new Elysia({ prefix: "/api/v1/newcomments" }).use(
         sticker: t.Optional(t.File()),
       }),
     })
-    .delete("/:storeId", (ctx) => newDeleteComment({ ...ctx, params: { commentId: ctx.params.storeId } }), {
-      params: t.Object({ storeId: t.String() }),
+    .delete("/:id", (ctx) => newDeleteComment({ ...ctx, params: { commentId: ctx.params.id } }), {
+      params: t.Object({ id: t.String() }),
       body: t.Object({ postId: t.String() }),
     })
-    .get("/:storeId/replies", (ctx) => newGetReplies({ ...ctx, params: { commentId: ctx.params.storeId } }), {
-      params: t.Object({ storeId: t.String() }),
+    .get("/:id/replies", (ctx) => newGetReplies({ ...ctx, params: { commentId: ctx.params.id } }), {
+      params: t.Object({ id: t.String() }),
     })
-    .post("/:storeId/reply", (ctx) => newAddReply({ ...ctx, params: { commentId: ctx.params.storeId } }), {
-      params: t.Object({ storeId: t.String() }),
+    .post("/:id/reply", (ctx) => newAddReply({ ...ctx, params: { commentId: ctx.params.id } }), {
+      params: t.Object({ id: t.String() }),
       body: t.Object({
         content: t.Optional(t.String()),
         audioComment: t.Optional(t.File()),

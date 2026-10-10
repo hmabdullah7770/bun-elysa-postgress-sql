@@ -131,6 +131,7 @@ export class UserRepository {
       .where(eq(users.email, email.toLowerCase()))
       .limit(1);
     return result[0];
+  
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
@@ -228,6 +229,24 @@ export class UserRepository {
     return result[0];
   }
 
+  async updateFcmToken(id: string, fcmToken: string | null) {
+    const result = await db
+      .update(users)
+      .set({ fcmToken, updatedAt: new Date() })
+      .where(eq(users._id, id))
+      .returning();
+    return result[0];
+  }
+
+  async clearAuthTokens(id: string) {
+    const result = await db
+      .update(users)
+      .set({ refreshToken: null, fcmToken: null, updatedAt: new Date() })
+      .where(eq(users._id, id))
+      .returning();
+    return result[0];
+  }
+
   async updatePassword(email: string, hashedPassword: string) {
     const result = await db
       .update(users)
@@ -269,6 +288,31 @@ export class UserRepository {
           SELECT COUNT(*) FROM follow_lists 
           WHERE follow_lists.follower_id = ${users._id}
         )`.as("following_count"),
+      })
+      .from(users)
+      .where(eq(users._id, userId))
+      .limit(1);
+
+    return result[0];
+  }
+
+  async findByIdWithFollowStatus(userId: string, viewerId: string) {
+    const result = await db
+      .select({
+        ...safeUserColumns,
+        followerCount: sql<number>`(
+          SELECT COUNT(*) FROM follow_lists
+          WHERE follow_lists.following_id = ${users._id}
+        )`.as("follower_count"),
+        followingCount: sql<number>`(
+          SELECT COUNT(*) FROM follow_lists
+          WHERE follow_lists.follower_id = ${users._id}
+        )`.as("following_count"),
+        isFollowing: sql<boolean>`EXISTS(
+          SELECT 1 FROM follow_lists
+          WHERE follow_lists.follower_id = ${viewerId}
+          AND follow_lists.following_id = ${users._id}
+        )`.as("is_following"),
       })
       .from(users)
       .where(eq(users._id, userId))

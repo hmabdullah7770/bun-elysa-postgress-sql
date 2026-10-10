@@ -52,7 +52,11 @@ export const createNotificationApi = async ({ body }: any) => {
     body: body.body,
     metadata: body.metadata,
   });
-  return new ApiResponse(201, notification, "Notification created successfully");
+  return new ApiResponse(
+    201,
+    { ...notification, _id: String(notification._id) },
+    "Notification created successfully"
+  );
 };
 
 export const getUserNotifications = async ({ query, userVerified }: any) => {

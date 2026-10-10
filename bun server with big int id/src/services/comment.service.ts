@@ -43,7 +43,7 @@ const toFrontendComment = (
   const dislikedBy: string[] = comment?.dislikedBy ?? [];
 
   return {
-    _id: comment._id,
+    _id: String(comment._id),
     inCommentId: comment.inCommentId?.toString?.() ?? String(comment.inCommentId),
     content: comment.content ?? null,
     commentType: comment.commentType,
@@ -52,7 +52,7 @@ const toFrontendComment = (
     imageUrl: comment.imageUrl ?? null,
     stickerUrl: comment.stickerUrl ?? null,
     fileUrl: comment.fileUrl ?? null,
-    postId: comment.postId,
+    postId: String(comment.postId),
     pinned: Boolean(comment.pinned),
     owner: owner
       ? {
@@ -62,7 +62,8 @@ const toFrontendComment = (
           avatar: owner.avatar,
         }
       : comment.owner,
-    parentComment: comment.parentComment ?? null,
+    parentComment:
+      comment.parentComment == null ? null : String(comment.parentComment),
     isReply: Boolean(comment.isReply),
     numberOfLikes: Number(comment.numberOfLikes ?? 0),
     numberOfDislikes: Number(comment.numberOfDislikes ?? 0),
@@ -72,6 +73,51 @@ const toFrontendComment = (
     updatedAt: comment.updatedAt,
     ...(opts?.extra ?? {}),
   };
+};
+
+type CommentTreeNode = ReturnType<typeof toFrontendComment> & {
+  _id: string;
+  parentComment: string | null;
+  replies?: CommentTreeNode[];
+  replyCount?: number;
+};
+
+const buildCommentTree = (
+  roots: CommentTreeNode[],
+  replies: CommentTreeNode[],
+  maxDepth: number,
+  rootRepliesLimit: number
+) => {
+  const repliesByParent = new Map<string, CommentTreeNode[]>();
+  for (const reply of replies) {
+    if (reply.parentComment === null) continue;
+    const siblings = repliesByParent.get(reply.parentComment) ?? [];
+    siblings.push(reply);
+    repliesByParent.set(reply.parentComment, siblings);
+  }
+
+  const countDescendants = (commentId: string): number =>
+    (repliesByParent.get(commentId) ?? []).reduce(
+      (count, reply) => count + 1 + countDescendants(reply._id),
+      0
+    );
+
+  const attachReplies = (comment: CommentTreeNode, depth: number) => {
+    if (depth >= maxDepth) {
+      comment.replies = [];
+      comment.replyCount = 0;
+      return;
+    }
+
+    const directReplies = repliesByParent.get(comment._id) ?? [];
+    comment.replyCount = countDescendants(comment._id);
+    comment.replies =
+      depth === 0 ? directReplies.slice(0, rootRepliesLimit) : directReplies;
+    for (const reply of comment.replies) attachReplies(reply, depth + 1);
+  };
+
+  for (const root of roots) attachReplies(root, 0);
+  return roots;
 };
 
 export class CommentService {
@@ -438,6 +484,8 @@ export class CommentService {
       limit = 25,
       sortType = "desc",
       includeReplies = "false",
+      repliesLimit = 3,
+      maxDepth = 3,
       includeGrandTotal = "false",
       getHasReply = "true",
       getRepliesCount = "false",
@@ -459,6 +507,8 @@ export class CommentService {
 
 
     const limitNumber = Math.max(1, Number(limit) || 25);
+    const repliesLimitNumber = Math.max(0, Number(repliesLimit) || 0);
+    const maxDepthNumber = Math.max(0, Number(maxDepth) || 0);
     const shouldIncludeReplies = includeReplies === "true";
     const shouldIncludeGrandTotal = includeGrandTotal === "true";
     const shouldGetHasReply = getHasReply === "true";
@@ -466,7 +516,9 @@ export class CommentService {
     const shouldGetPinnedComment = pinnedComment === "true";
 
     
-    const cursorRow = cursor ? await commentRepository.findByInCommentId(String(cursor)) : undefined;
+    const cursorRow = cursor
+      ? await commentRepository.findCommentCursor(postId, String(cursor))
+      : undefined;
     const cursorCreatedAt = cursorRow?.createdAt ?? null;
 
     const topLevel = await commentRepository.findTopLevelPage({
@@ -494,25 +546,35 @@ export class CommentService {
       metadataMap = await commentRepository.getReplyCounts(commentIds);
     }
 
-    const finalComments = merged.map((r) => {
+    const mappedComments = merged.map((r) => {
       const count = metadataMap.get(String(r.comment._id)) || 0;
       const extra: any = { ...(r.__extra ?? {}) };
       if (shouldGetHasReply) extra.hasReply = count > 0;
       if (shouldGetRepliesCount) extra.repliesCount = count;
-      if (shouldIncludeReplies) {
-        extra.replies = [];
-        extra.replyCount = 0;
-      }
       return toFrontendComment(r, { currentUserId: params.userId, extra });
     });
+    const finalComments = shouldIncludeReplies && mappedComments.length
+      ? buildCommentTree(
+          mappedComments,
+          (await commentRepository.listRepliesForPost(postId)).map((reply) =>
+            toFrontendComment(reply, { currentUserId: params.userId })
+          ),
+          maxDepthNumber,
+          repliesLimitNumber
+        )
+      : mappedComments;
 
     const nextCursor =
       finalComments.length > 0
         ? finalComments[finalComments.length - 1]?.inCommentId ?? null
         : null;
 
-    // totalComments / grandTotal not implemented without posts table; keep same keys
-    const totalComments = shouldIncludeGrandTotal ? finalComments.length : finalComments.length;
+    const [totalComments, grandTotal] = await Promise.all([
+      commentRepository.countByPost(postId, false),
+      shouldIncludeGrandTotal
+        ? commentRepository.countByPost(postId)
+        : Promise.resolve(undefined),
+    ]);
 
     return {
       comments: finalComments,
@@ -521,7 +583,7 @@ export class CommentService {
         nextCursor: hasNextPage ? nextCursor : null,
         hasNextPage,
         totalComments,
-        ...(shouldIncludeGrandTotal ? { grandTotal: totalComments } : {}),
+        ...(shouldIncludeGrandTotal ? { grandTotal } : {}),
       },
     };
   }
@@ -531,12 +593,18 @@ export class CommentService {
       cursor = null,
       limit = 10,
       sortType = "desc",
+      includeNestedReplies = "false",
+      nestedLimit = 3,
+      maxDepth = 2,
       getHasReply = "true",
       getRepliesCount = "false",
       getTotalCount = "false",
     } = params.query ?? {};
 
     const limitNumber = Math.max(1, Number(limit) || 10);
+    const nestedLimitNumber = Math.max(0, Number(nestedLimit) || 0);
+    const maxDepthNumber = Math.max(0, Number(maxDepth) || 0);
+    const shouldIncludeNestedReplies = includeNestedReplies === "true";
     const shouldGetHasReply = getHasReply === "true";
     const shouldGetRepliesCount = getRepliesCount === "true";
     const shouldGetTotalCount = getTotalCount === "true";
@@ -548,7 +616,12 @@ export class CommentService {
     const parent = await commentRepository.findById(params.commentId);
     if (!parent) throw new ApiError(404, "Parent comment not found");
 
-    const cursorRow = cursor ? await commentRepository.findByInCommentId(String(cursor)) : undefined;
+    const cursorRow = cursor
+      ? await commentRepository.findReplyCursor(
+          params.commentId,
+          String(cursor)
+        )
+      : undefined;
     const cursorCreatedAt = cursorRow?.createdAt ?? null;
 
     const replies = await commentRepository.findRepliesPage({
@@ -567,13 +640,24 @@ export class CommentService {
       metadataMap = await commentRepository.getReplyCounts(ids);
     }
 
-    const finalReplies = pageItems.map((r) => {
+    const mappedReplies = pageItems.map((r) => {
       const count = metadataMap.get(String(r.comment._id)) || 0;
       const extra: any = {};
       if (shouldGetHasReply) extra.hasReply = count > 0;
       if (shouldGetRepliesCount) extra.repliesCount = count;
       return toFrontendComment(r, { currentUserId: params.userId, extra });
     });
+    const finalReplies = shouldIncludeNestedReplies && mappedReplies.length
+      ? buildCommentTree(
+          mappedReplies,
+          (await commentRepository.listRepliesForPost(parent.postId)).map(
+            (reply) =>
+              toFrontendComment(reply, { currentUserId: params.userId })
+          ),
+          maxDepthNumber,
+          nestedLimitNumber
+        )
+      : mappedReplies;
 
     const nextCursor =
       finalReplies.length > 0
@@ -586,7 +670,9 @@ export class CommentService {
         limit: limitNumber,
         nextCursor: hasNextPage ? nextCursor : null,
         hasNextPage,
-        ...(shouldGetTotalCount ? { totalReplies: finalReplies.length } : {}),
+        ...(shouldGetTotalCount
+          ? { totalReplies: await commentRepository.countReplies(params.commentId) }
+          : {}),
       },
     };
   }
@@ -654,7 +740,7 @@ export class CommentService {
         numberOfLikes,
       });
       return {
-        commentId: c._id,
+        commentId: String(c._id),
         numberOfLikes,
         numberOfDislikes,
         userHasLiked: false,
@@ -683,7 +769,7 @@ export class CommentService {
     }
 
     return {
-      commentId: c._id,
+      commentId: String(c._id),
       numberOfLikes,
       numberOfDislikes,
       userHasLiked: true,
@@ -717,7 +803,7 @@ export class CommentService {
         numberOfDislikes,
       });
       return {
-        commentId: c._id,
+        commentId: String(c._id),
         numberOfLikes,
         numberOfDislikes,
         userHasLiked: hasLiked,
@@ -746,7 +832,7 @@ export class CommentService {
     }
 
     return {
-      commentId: c._id,
+      commentId: String(c._id),
       numberOfLikes,
       numberOfDislikes,
       userHasLiked: false,
@@ -766,7 +852,7 @@ export class CommentService {
     const dislikedBy = Array.isArray(c.dislikedBy) ? c.dislikedBy : [];
 
     return {
-      commentId: c._id,
+      commentId: String(c._id),
       numberOfLikes: Number(c.numberOfLikes || 0),
       numberOfDislikes: Number(c.numberOfDislikes || 0),
       userHasLiked: likedBy.includes(params.userId),
@@ -793,8 +879,15 @@ export class CommentService {
     const dateTo = q.dateTo ? new Date(String(q.dateTo)) : null;
     const sortBy =
       q.sortBy === "likes" || q.sortBy === "recent" ? q.sortBy : ("relevance" as const);
+    const cursor = q.cursor
+      ? await commentRepository.findSearchCursor(
+          params.postId,
+          String(q.cursor),
+          includeReplies
+        )
+      : undefined;
 
-    const results = await commentRepository.search({
+    const { rows: results, total: totalMatches } = await commentRepository.search({
       postId: params.postId,
       searchTerm,
       limit: limitNumber + 1,
@@ -807,6 +900,7 @@ export class CommentService {
       dateFrom,
       dateTo,
       sortBy,
+      cursor,
     });
 
     const hasNextPage = results.length > limitNumber;
@@ -821,7 +915,7 @@ export class CommentService {
         limit: limitNumber,
         nextCursor: hasNextPage ? nextCursor : null,
         hasNextPage,
-        totalMatches: final.length,
+        totalMatches,
         searchTerm,
       },
       searchConfig: {
@@ -837,4 +931,3 @@ export class CommentService {
 }
 
 export const commentService = new CommentService();
-

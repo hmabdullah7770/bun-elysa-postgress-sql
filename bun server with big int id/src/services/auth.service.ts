@@ -8,9 +8,29 @@ import {
   verifyRefreshToken,
 } from "../utils/token";
 import { uploadResult, saveTempFile} from "../utils/cloudinary";
+import { flags } from "../config/flags";
+import {
+  EMAIL_QUEUE_NAMES,
+  addEmailJob,
+} from "../MQ/Qstash/dispatcher/email.dispatcher";
+import { processEmailJob } from "../MQ/email.handlers";
+import { sendVerificationEmail } from "../utils/sendEmail";
 // import type { User } from "../schemas";
 
 export class AuthService {
+  private async deliverOrQueueEmail(
+    queueName: string,
+    type: string,
+    data: { to: string; otp?: string; username?: string }
+  ) {
+    if (flags.useEmailQueue) {
+      await addEmailJob(queueName, type, data);
+      return;
+    }
+
+    await processEmailJob(type, data);
+  }
+
   // â”€â”€â”€ Token Generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async generateTokens(userId: string) {
@@ -53,10 +73,45 @@ export class AuthService {
       purpose: "registration",
     });
 
-    // TODO: Send email with OTP using nodemailer
-    // await transporter.sendMail({ ... })
+    try {
+      if (flags.useEmailQueue) {
+        await addEmailJob(EMAIL_QUEUE_NAMES.AUTH, "verify-email", {
+          to: email,
+          otp,
+        });
+      } 
+      // else {
+      //   await sendVerificationEmail({ to: email, otp });
+      // }
+    } catch (error) {
+      await otpRepository.deleteByEmailAndPurpose(email, "registration");
+      console.error("Failed to send verification email:", error);
+      throw new ApiError(500, "Failed to send verification email");
+    }
 
     return { otp }; // Remove OTP from response in production
+  }
+
+  async resendOtp(email: string) {
+    if (!email) throw new ApiError(400, "Email is required");
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await Bun.password.hash(otp, {
+      algorithm: "bcrypt",
+      cost: 10,
+    });
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await otpRepository.upsertByEmail(email, {
+      otp: otpHash,
+      expiresAt,
+      purpose: "registration",
+    });
+
+    // await this.deliverOrQueueEmail(EMAIL_QUEUE_NAMES.AUTH, "resend-otp", {
+    //   to: email,
+    //   otp,
+    // });
   }
 
   // â”€â”€â”€ Check Username Availability â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -205,11 +260,16 @@ export class AuthService {
     throw new ApiError(500, "Something went wrong while registering");
   }
 
+  await this.deliverOrQueueEmail(EMAIL_QUEUE_NAMES.AUTH, "welcome-email", {
+    to: safeUser.email,
+    username: safeUser.username,
+  });
+
   return safeUser;
 }
   // â”€â”€â”€ Login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async login(emailOrUsername: string, password: string) {
+  async login(emailOrUsername: string, password: string, fcmToken?: string) {
     if (!emailOrUsername || !password) {
       throw new ApiError(400, "Email/username and password are required");
     }
@@ -227,6 +287,8 @@ export class AuthService {
 
     const { accessToken, refreshToken } = await this.generateTokens(user._id);
 
+    if (fcmToken) await userRepository.updateFcmToken(user._id, fcmToken);
+
     const loggedInUser = await userRepository.findByIdSafe(user._id);
     if (!loggedInUser) {
       throw new ApiError(500, "Something went wrong while logging in");
@@ -238,7 +300,13 @@ export class AuthService {
   // â”€â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   async logout(userId: string) {
-    await userRepository.updateRefreshToken(userId, null);
+    await userRepository.clearAuthTokens(userId);
+  }
+
+  async updateFcmToken(userId: string, fcmToken: string) {
+    if (!fcmToken) throw new ApiError(400, "FCM token is required");
+    const updatedUser = await userRepository.updateFcmToken(userId, fcmToken);
+    if (!updatedUser) throw new ApiError(404, "User not found");
   }
 
   // â”€â”€â”€ Refresh Token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -302,7 +370,11 @@ export class AuthService {
       purpose: "password_reset",
     });
 
-    // TODO: Send email
+    // await this.deliverOrQueueEmail(EMAIL_QUEUE_NAMES.PASSWORD, "forget-password", {
+    //   to: email,
+    //   otp,
+    // });
+
     return { otp }; // Remove in production
   }
 
@@ -360,6 +432,12 @@ export class AuthService {
 
     await otpRepository.deleteByEmailAndPurpose(email, "password_reset");
 
+    // await this.deliverOrQueueEmail(
+    //   EMAIL_QUEUE_NAMES.PASSWORD,
+    //   "password-reset-success",
+    //   { to: email, username: updatedUser.username }
+    // );
+
     return { success: true };
   }
 
@@ -386,6 +464,11 @@ export class AuthService {
     });
 
     await userRepository.updateById(userId, { password: hashedPassword });
+    await this.deliverOrQueueEmail(
+      EMAIL_QUEUE_NAMES.PASSWORD,
+      "password-changed",
+      { to: user.email, username: user.username }
+    );
 
     return { success: true };
   }

@@ -3,8 +3,131 @@ import { storeOrderRepository } from "../../repository/store/store_order.reposit
 import { storeProductRepository } from "../../repository/store/store_product.repository";
 import { createstoreRepository } from "../../repository/store/createstore.repository";
 import { ApiError } from "../../utils/ApiError";
-import { type StoreOrderItem } from "../../schemas/store/store_order.schema";
+import {
+  type StoreOrderItem,
+  type StoreOrderWithItems,
+} from "../../schemas/store/store_order.schema";
 import {isValidId} from "../../Validators/bigintvalidator";
+
+type OrderUserDetails = {
+  _id: string;
+  username: string;
+  fullName: string | null;
+  avatar: string;
+  email: string;
+};
+
+type DetailedOrder = StoreOrderWithItems & {
+  customer?: OrderUserDetails | null;
+  storeOwner?: OrderUserDetails | null;
+  store?: { storeName: string; storeLogo: string } | null;
+};
+
+const serializeOrder = (order: StoreOrderWithItems) => ({
+  ...order,
+  _id: String(order._id),
+  customerId: String(order.customerId),
+  storeId: String(order.storeId),
+  storeOwnerId: String(order.storeOwnerId),
+  totalAmount: Number(order.totalAmount),
+  shippingCost: Number(order.shippingCost),
+  finalAmount: Number(order.finalAmount),
+  items: order.items.map((item) => ({
+    _id: String(item._id),
+    productId: String(item.productId),
+    productName: item.productName,
+    productImages: item.productImages,
+    size: item.size,
+    color: item.color,
+    quantity: item.quantity,
+    itemStatus: item.itemStatus,
+    itemPaymentStatus: item.itemPaymentStatus,
+  })),
+});
+
+const toStoreOrderDoc = (
+  order: StoreOrderWithItems & { customer?: OrderUserDetails | null }
+) => {
+  const serialized = serializeOrder(order);
+  return {
+    _id: serialized._id,
+    customerName: order.customerName,
+    customerEmail: order.customerEmail,
+    customerPhone: order.customerPhone,
+    customerAddress: order.customerAddress,
+    customerCity: order.customerCity,
+    customerCountry: order.customerCountry,
+    customerPostalCode: order.customerPostalCode,
+    items: serialized.items,
+    totalAmount: serialized.totalAmount,
+    shippingCost: serialized.shippingCost,
+    finalAmount: serialized.finalAmount,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
+    orderStatus: order.orderStatus,
+    trackingNumber: order.trackingNumber,
+    notes: order.notes,
+    createdAt: order.createdAt,
+    customerDetails: order.customer
+      ? {
+          _id: String(order.customer._id),
+          username: order.customer.username,
+          fullName: order.customer.fullName,
+          avatar: order.customer.avatar,
+          email: order.customer.email,
+        }
+      : null,
+  };
+};
+
+const toCustomerOrderDoc = (order: DetailedOrder) => {
+  const serialized = serializeOrder(order);
+  return {
+    _id: serialized._id,
+    items: serialized.items,
+    totalAmount: serialized.totalAmount,
+    shippingCost: serialized.shippingCost,
+    finalAmount: serialized.finalAmount,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
+    orderStatus: order.orderStatus,
+    trackingNumber: order.trackingNumber,
+    createdAt: order.createdAt,
+    storeOwnerDetails: order.storeOwner
+      ? {
+          username: order.storeOwner.username,
+          fullName: order.storeOwner.fullName,
+          avatar: order.storeOwner.avatar,
+          email: order.storeOwner.email,
+        }
+      : null,
+    storeDetails: order.store
+      ? {
+          _id: String(order.storeId),
+          storeName: order.store.storeName,
+          storeLogo: order.store.storeLogo,
+        }
+      : null,
+  };
+};
+
+const toPaginator = <T, U>(
+  result: { orders: T[]; total: number; totalPages: number },
+  page: number,
+  limit: number,
+  map: (order: T) => U
+) => ({
+  docs: result.orders.map(map),
+  totalDocs: result.total,
+  limit,
+  page,
+  totalPages: result.totalPages,
+  pagingCounter: (page - 1) * limit + 1,
+  hasPrevPage: page > 1,
+  hasNextPage: page < result.totalPages,
+  prevPage: page > 1 ? page - 1 : null,
+  nextPage: page < result.totalPages ? page + 1 : null,
+});
 
 interface CreateOrderItemInput {
   productId: number;
@@ -139,7 +262,9 @@ export const storeOrderService = {
     // Mark notification sent
     await storeOrderRepository.markNotified(order._id);
 
-    return order;
+    const notifiedOrder = await storeOrderRepository.findById(order._id);
+    if (!notifiedOrder) throw new ApiError(500, "Could not retrieve the created order");
+    return serializeOrder(notifiedOrder);
   },
 
   // âœ… Get store orders (store owner)
@@ -147,18 +272,63 @@ export const storeOrderService = {
     const store = await createstoreRepository.findById(storeId);
     if (!store) throw new ApiError(404, "Store not found");
 
-    return await storeOrderRepository.findByStoreId(storeId, page, limit);
+    const result = await storeOrderRepository.findByStoreId(storeId, page, limit);
+    return toPaginator(result, page, limit, toStoreOrderDoc);
   },
 
   // âœ… Get order by ID
-  async getOrderById(orderId: number) {
+  async getOrderById(orderId: number, requesterId: string, storeId?: string) {
 
     if(!isValidId(orderId)) {
       throw new ApiError(400, "Invalid orderId format");
     }
-    const order = await storeOrderRepository.findById(orderId);
+    const order = await storeOrderRepository.findByIdWithDetails(orderId, storeId);
     if (!order) throw new ApiError(404, "Order not found");
-    return order;
+    if (order.customerId !== requesterId && order.storeOwnerId !== requesterId) {
+      throw new ApiError(403, "Unauthorized access");
+    }
+
+    const detailedOrder = order as DetailedOrder;
+    const serialized = serializeOrder(order);
+    return {
+      _id: serialized._id,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      customerPhone: order.customerPhone,
+      customerAddress: order.customerAddress,
+      items: serialized.items,
+      totalAmount: serialized.totalAmount,
+      shippingCost: serialized.shippingCost,
+      finalAmount: serialized.finalAmount,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+      orderStatus: order.orderStatus,
+      trackingNumber: order.trackingNumber,
+      notes: order.notes,
+      createdAt: order.createdAt,
+      customerDetails: detailedOrder.customer
+        ? {
+            username: detailedOrder.customer.username,
+            fullName: detailedOrder.customer.fullName,
+            avatar: detailedOrder.customer.avatar,
+            email: detailedOrder.customer.email,
+          }
+        : null,
+      storeOwnerDetails: detailedOrder.storeOwner
+        ? {
+            username: detailedOrder.storeOwner.username,
+            fullName: detailedOrder.storeOwner.fullName,
+            avatar: detailedOrder.storeOwner.avatar,
+            email: detailedOrder.storeOwner.email,
+          }
+        : null,
+      storeDetails: detailedOrder.store
+        ? {
+            storeName: detailedOrder.store.storeName,
+            storeLogo: detailedOrder.store.storeLogo,
+          }
+        : null,
+    };
   },
 
   // âœ… Get order by ID and store
@@ -187,7 +357,7 @@ export const storeOrderService = {
       trackingNumber
     );
     if (!order) throw new ApiError(404, "Order not found");
-    return order;
+    return serializeOrder(order);
   },
 
   // âœ… Get customer orders â€” all stores (with optional storeId filter via query)
@@ -196,39 +366,59 @@ export const storeOrderService = {
     customerId: string,
     page: number,
     limit: number,
-    storeId?: string
+    storeId?: string,
+    status?: StoreOrderWithItems["orderStatus"]
   ) {
     if (storeId) {
       const store = await createstoreRepository.findById(storeId);
       if (!store) throw new ApiError(404, "Store not found");
     }
 
-    return await storeOrderRepository.findByCustomerId(customerId, page, limit, storeId);
+    const result = await storeOrderRepository.findByCustomerId(
+      customerId,
+      page,
+      limit,
+      storeId,
+      status
+    );
+    return toPaginator(result, page, limit, toCustomerOrderDoc);
   },
 
   // âœ… Get customer orders from ONE store â€” returns storeInfo in response
   // Mirrors old getCustomerOrdersFromOneStore endpoint
   async getCustomerOrdersFromOneStore(
     customerId: string,
-    storeId: string,
-    page: number,
-    limit: number
+    storeId: string
   ) {
     const store = await createstoreRepository.findById(storeId);
     if (!store) throw new ApiError(404, "Store not found");
 
-    const result = await storeOrderRepository.findByCustomerId(
-      customerId,
-      page,
-      limit,
-      storeId
-    );
+    const orders = await storeOrderRepository.findByCustomerAndStore(customerId, storeId);
 
     return {
-      orders: result.orders,
-      totalOrders: result.total,
+      orders: orders.map((order) => {
+        const serialized = serializeOrder(order);
+        const owner = (order as DetailedOrder).storeOwner;
+        return {
+          ...serialized,
+          storeOwnerId: owner
+            ? {
+                _id: String(owner._id),
+                username: owner.username,
+                fullName: owner.fullName,
+                avatar: owner.avatar,
+                email: owner.email,
+              }
+            : null,
+          storeDetails: {
+            storeName: store.storeName,
+            storeLogo: store.storeLogo,
+          },
+        };
+      }),
+      totalOrders: orders.length,
       storeInfo: {
-        storeId: store._id,
+        storeId: String(store._id),
         storeName: store.storeName,
         storeLogo: store.storeLogo,
       },
@@ -238,14 +428,16 @@ export const storeOrderService = {
   // âœ… Cancel order by customer (only pending orders)
   async cancelOrderByCustomer(
     orderId: number,
-    storeId: string,
+    storeId: string | undefined,
     customerId: string
   ) {
 
     if(!isValidId(orderId)) {
       throw new ApiError(400, "Invalid orderId format");
     }
-    const order = await storeOrderRepository.findByIdAndStore(orderId, storeId);
+    const order = storeId
+      ? await storeOrderRepository.findByIdAndStore(orderId, storeId)
+      : await storeOrderRepository.findById(orderId);
     if (!order) throw new ApiError(404, "Order not found");
 
     if (order.customerId !== customerId) {
@@ -259,7 +451,7 @@ export const storeOrderService = {
     const cancelled = await storeOrderRepository.cancelOrder(orderId);
     if (!cancelled) throw new ApiError(400, "Order could not be cancelled");
 
-    return cancelled;
+    return cancelled ? serializeOrder(cancelled) : cancelled;
   },
 
   // âœ… Delete order by store owner (hard delete â€” cascades items)
@@ -335,7 +527,20 @@ export const storeOrderService = {
     // Return full order + the updated item (mirrors old JS response)
     const order = await storeOrderRepository.findById(orderId);
 
-    return { order, updatedItem };
+    return {
+      order: order ? serializeOrder(order) : null,
+      updatedItem: {
+        _id: String(updatedItem._id),
+        productId: String(updatedItem.productId),
+        productName: updatedItem.productName,
+        productImages: updatedItem.productImages,
+        size: updatedItem.size,
+        color: updatedItem.color,
+        quantity: updatedItem.quantity,
+        itemStatus: updatedItem.itemStatus,
+        itemPaymentStatus: updatedItem.itemPaymentStatus,
+      },
+    };
   },
 };
 

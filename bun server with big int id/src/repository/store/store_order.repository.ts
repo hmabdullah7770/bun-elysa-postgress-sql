@@ -1,5 +1,5 @@
 ﻿// src/repositories/store-order.repository.ts
-import { and, eq, desc, sql, inArray } from "drizzle-orm";
+import { and, eq, desc, sql } from "drizzle-orm";
 import { db } from "../../db";
 import {
   store_order,
@@ -55,6 +55,44 @@ export const storeOrderRepository = {
     return order;
   },
 
+  async findByIdWithDetails(
+    _id: number,
+    storeId?: string
+  ) {
+    return db.query.store_order.findFirst({
+      where: storeId
+        ? and(eq(store_order._id, _id), eq(store_order.storeId, storeId))
+        : eq(store_order._id, _id),
+      with: {
+        items: true,
+        customer: {
+          columns: {
+            _id: true,
+            username: true,
+            fullName: true,
+            avatar: true,
+            email: true,
+          },
+        },
+        storeOwner: {
+          columns: {
+            _id: true,
+            username: true,
+            fullName: true,
+            avatar: true,
+            email: true,
+          },
+        },
+        store: {
+          columns: {
+            storeName: true,
+            storeLogo: true,
+          },
+        },
+      },
+    });
+  },
+
   // Ã¢Å“â€¦ Find order by _id and storeId with items
   async findByIdAndStore(
     _id: number,
@@ -67,6 +105,15 @@ export const storeOrderRepository = {
       ),
       with: {
         items: true,
+        customer: {
+          columns: {
+            _id: true,
+            username: true,
+            fullName: true,
+            avatar: true,
+            email: true,
+          },
+        },
       },
     });
     return order;
@@ -77,7 +124,7 @@ export const storeOrderRepository = {
     storeId: string,
     page: number,
     limit: number
-  ): Promise<{ orders: StoreOrderWithItems[]; total: number; totalPages: number }> {
+  ) {
     const offset = (page - 1) * limit;
 
     const orders = await db.query.store_order.findMany({
@@ -87,6 +134,15 @@ export const storeOrderRepository = {
       offset,
       with: {
         items: true,
+        customer: {
+          columns: {
+            _id: true,
+            username: true,
+            fullName: true,
+            avatar: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -109,16 +165,16 @@ export const storeOrderRepository = {
     customerId: string,
     page: number,
     limit: number,
-    storeId?: string
-  ): Promise<{ orders: StoreOrderWithItems[]; total: number; totalPages: number }> {
+    storeId?: string,
+    status?: StoreOrder["orderStatus"]
+  ) {
     const offset = (page - 1) * limit;
 
-    const whereClause = storeId
-      ? and(
-          eq(store_order.customerId, customerId),
-          eq(store_order.storeId, storeId)
-        )
-      : eq(store_order.customerId, customerId);
+    const whereClause = and(
+      eq(store_order.customerId, customerId),
+      ...(storeId ? [eq(store_order.storeId, storeId)] : []),
+      ...(status ? [eq(store_order.orderStatus, status)] : [])
+    );
 
     const orders = await db.query.store_order.findMany({
       where: whereClause,
@@ -127,6 +183,22 @@ export const storeOrderRepository = {
       offset,
       with: {
         items: true,
+        storeOwner: {
+          columns: {
+            _id: true,
+            username: true,
+            fullName: true,
+            avatar: true,
+            email: true,
+          },
+        },
+        store: {
+          columns: {
+            _id: true,
+            storeName: true,
+            storeLogo: true,
+          },
+        },
       },
     });
 
@@ -144,6 +216,27 @@ export const storeOrderRepository = {
     };
   },
 
+  async findByCustomerAndStore(customerId: string, storeId: string) {
+    return db.query.store_order.findMany({
+      where: and(
+        eq(store_order.customerId, customerId),
+        eq(store_order.storeId, storeId)
+      ),
+      orderBy: desc(store_order.createdAt),
+      with: {
+        items: true,
+        storeOwner: {
+          columns: {
+            _id: true,
+            username: true,
+            fullName: true,
+            avatar: true,
+            email: true,
+          },
+        },
+      },
+    });
+  },
   // Ã¢Å“â€¦ Update order status
   async updateOrderStatus(
     _id: number,

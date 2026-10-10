@@ -18,12 +18,12 @@ import { storeCartController } from "../../controller/store/store_cart.controlle
   })
 
   // REMOVE FROM CART
-  .delete("/store-cart/remove", async ({ body }) => {
+  .delete("/cart/remove", async ({ body }) => {
     return await storeCartController.removeFromStoreCart(body);
   })
 
   // CLEAR CART
-  .delete("/store-cart/clear", async ({ body }) => {
+  .delete("/cart/clear", async ({ body }) => {
     return await storeCartController.clearStoreCart(body);
   });
 

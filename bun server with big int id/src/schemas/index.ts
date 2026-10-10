@@ -12,6 +12,7 @@ export * from "./categoury.schema";
 export * from "./notification.schema";
 export * from "./subscription.schema";
 export * from "./videoModeration.schema";
+export * from "./banner.schema";
 export * from "./store/store_get_Notification.shema";
 
 // ✅ OTP schema exports (named)

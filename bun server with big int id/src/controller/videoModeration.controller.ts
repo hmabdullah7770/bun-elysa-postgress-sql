@@ -31,10 +31,10 @@ export const checkVideoFrames = async ({ body, userVerified }: any) => {
   });
   return new ApiResponse(
     200,
-    result,
+    { ...result, _id: String(result._id) },
     result.approved
       ? "Video approved successfully"
-      : "Video rejected - inappropriate content detected"
+      : "Video rejected — inappropriate content detected"
   );
 };
 
@@ -43,7 +43,11 @@ export const verifyModeration = async ({ body, userVerified }: any) => {
     throw new ApiError(400, "_id is required");
   }
   const result = await videoModerationService.verify(userVerified._id, parseId(String(body._id)));
-  return new ApiResponse(200, result, "Video is approved and ready to post");
+  return new ApiResponse(
+    200,
+    { ...result, _id: String(result._id) },
+    "Video is approved and ready to post"
+  );
 };
 
 export const deleteModerationRecord = async ({ params, userVerified }: any) => {
@@ -51,7 +55,7 @@ export const deleteModerationRecord = async ({ params, userVerified }: any) => {
   const deleted = await videoModerationService.delete(userVerified._id, id);
   return new ApiResponse(
     200,
-    deleted ? { deleted: true, _id: id } : { deleted: false },
+    deleted ? { deleted: true, _id: String(id) } : { deleted: false },
     deleted
       ? "Moderation record deleted successfully"
       : "Moderation record not found (already deleted or never existed)"

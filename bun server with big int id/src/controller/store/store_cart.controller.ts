@@ -2,8 +2,61 @@
 import { storeCartService } from "../../services/store/store_cart.service";
 import { ApiError } from "../../utils/ApiError";
 import { ApiResponse } from "../../utils/ApiResponse";
+import type { StoreCartWithItems } from "../../schemas/store/store_cart.schema";
 import { isValidId } from "../../Validators/bigintvalidator";
 import { isUUID } from "../../Validators/isUUID";
+
+const toLegacyCartResponse = (cart: StoreCartWithItems | null | undefined) => {
+  if (!cart) return null;
+
+  return {
+    _id: String(cart._id),
+    userId: cart.userId,
+    storeId: cart.storeId,
+    products: cart.items.map((item) => ({
+      _id: String(item._id),
+      productId: item.productId == null ? null : String(item.productId),
+      quantity: item.quantity,
+      color: item.colorId == null
+        ? null
+        : {
+            _id: String(item.colorId),
+            color: item.colorValue,
+            index: item.colorIndex,
+          },
+      size: item.size,
+    })),
+    createdAt: cart.createdAt,
+    updatedAt: cart.updatedAt,
+  };
+};
+
+const toLegacyGetCartResponse = (
+  cart: Awaited<ReturnType<typeof storeCartService.getStoreCart>>
+) => ({
+  items: cart.items.map((item) => ({
+    productId: item.productId == null ? null : String(item.productId),
+    productName: item.productName,
+    productImages: item.productImages,
+    productPrice: item.productPrice,
+    finalPrice: item.finalPrice,
+    productDiscount: item.productDiscount,
+    stock: item.stock,
+    category: item.category,
+    quantity: item.quantity,
+    color: item.color
+      ? {
+          _id: item.color._id == null ? null : String(item.color._id),
+          color: item.color.color,
+          index: item.color.index,
+        }
+      : null,
+    size: item.size,
+  })),
+  total: cart.total,
+  totalSavings: cart.totalSavings,
+  totalQuantity: cart.totalQuantity,
+});
 
 export class StoreCartController {
 
@@ -40,7 +93,7 @@ export class StoreCartController {
       size: size ?? null,
     });
 
-    return new ApiResponse(200, cart, "Product added to cart");
+    return new ApiResponse(200, toLegacyCartResponse(cart), "Product added to cart");
   }
 
   // â”€â”€â”€ GET CART â”€â”€â”€
@@ -58,7 +111,7 @@ export class StoreCartController {
       ? "Cart is empty"
       : "Cart retrieved successfully";
 
-    return new ApiResponse(200, cartData, message);
+    return new ApiResponse(200, toLegacyGetCartResponse(cartData), message);
   }
 
   // â”€â”€â”€ REMOVE FROM CART â”€â”€â”€
@@ -85,7 +138,7 @@ export class StoreCartController {
       size: size ?? null,
     });
 
-    return new ApiResponse(200, cart, "Product removed from cart");
+    return new ApiResponse(200, toLegacyCartResponse(cart), "Product removed from cart");
   }
 
   // â”€â”€â”€ CLEAR CART â”€â”€â”€

@@ -1,6 +1,17 @@
-﻿import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import { db } from "../db";
-import { post_counters, posts, users, type NewPost } from "../schemas";
+import {
+  bids,
+  comments,
+  createStore,
+  followLists,
+  post_counters,
+  posts,
+  ratings,
+  store_product,
+  users,
+  type NewPost,
+} from "../schemas";
 
 type SortBy = "createdAt" | "averageRating" | "totalViews" | "inCategoryId";
 type SortType = "asc" | "desc";
@@ -80,6 +91,173 @@ export class PostRepository {
     return row ?? null;
   }
 
+  async findPublishedByIdsWithOwner(postIds: number[]) {
+    if (postIds.length === 0) return [];
+
+    return db
+      .select({
+        post: posts,
+        owner: {
+          _id: users._id,
+          username: users.username,
+          fullName: users.fullName,
+          avatar: users.avatar,
+          email: users.email,
+        },
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.owner, users._id))
+      .where(and(inArray(posts._id, postIds), eq(posts.isPublished, true)));
+  }
+
+  async findByIdWithOwner(postId: string) {
+    const [row] = await db
+      .select({
+        post: posts,
+        owner: {
+          _id: users._id,
+          username: users.username,
+          fullName: users.fullName,
+          avatar: users.avatar,
+        },
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.owner, users._id))
+      .where(eq(posts._id, Number(postId)))
+      .limit(1);
+    return row ?? null;
+  }
+
+  async findByIdWithOwnerAndCatalog(postId: string) {
+    const row = await this.findByIdWithOwner(postId);
+    if (!row) return null;
+
+    const storeIds = (row.post.store ?? [])
+      .map((item) => item.storeId)
+      .filter((id): id is string => Boolean(id));
+    const productIds = (row.post.product ?? [])
+      .map((item) => item.ProductId)
+      .filter((id): id is number => typeof id === "number");
+    const [storeRows, productRows] = await Promise.all([
+      storeIds.length
+        ? db.select().from(createStore).where(inArray(createStore._id, storeIds))
+        : Promise.resolve([]),
+      productIds.length
+        ? db.select().from(store_product).where(inArray(store_product._id, productIds))
+        : Promise.resolve([]),
+    ]);
+    const storesById = new Map(storeRows.map((store) => [store._id, store]));
+    const productsById = new Map(productRows.map((product) => [product._id, product]));
+
+    return {
+      ...row,
+      post: {
+        ...row.post,
+        store: (row.post.store ?? []).map((item) => ({
+          ...item,
+          storeId: item.storeId ? storesById.get(item.storeId) ?? null : null,
+        })),
+        product: (row.post.product ?? []).map((item) => ({
+          ...item,
+          ProductId:
+            item.ProductId !== undefined
+              ? productsById.get(item.ProductId) ?? null
+              : null,
+        })),
+      },
+    };
+  }
+
+  async getUserPostEnrichment(
+    postIds: number[],
+    ownerIds: string[],
+    userId: string,
+    includeComments: "none" | "counts" | "details"
+  ) {
+    if (postIds.length === 0) {
+      return { following: [], followers: [], bids: [], ratings: [], comments: [] };
+    }
+
+    const [following, followers, userBids, userRatings, userComments] =
+      await Promise.all([
+        ownerIds.length
+          ? db
+              .select({ followingId: followLists.followingId })
+              .from(followLists)
+              .where(
+                and(
+                  eq(followLists.followerId, userId),
+                  inArray(followLists.followingId, ownerIds)
+                )
+              )
+          : Promise.resolve([]),
+        ownerIds.length
+          ? db
+              .select({ followerId: followLists.followerId })
+              .from(followLists)
+              .where(
+                and(
+                  inArray(followLists.followerId, ownerIds),
+                  eq(followLists.followingId, userId)
+                )
+              )
+          : Promise.resolve([]),
+        db
+          .select({ postId: bids.postId, bidAmount: bids.bidAmount })
+          .from(bids)
+          .where(and(inArray(bids.postId, postIds), eq(bids.userId, userId))),
+        db
+          .select({ postId: ratings.postId, rating: ratings.rating })
+          .from(ratings)
+          .where(and(inArray(ratings.postId, postIds), eq(ratings.owner, userId))),
+        includeComments === "none"
+          ? Promise.resolve([])
+          : db
+              .select({
+                _id: comments._id,
+                postId: comments.postId,
+                content: comments.content,
+                audioUrl: comments.audioUrl,
+                videoUrl: comments.videoUrl,
+                stickerUrl: comments.stickerUrl,
+                createdAt: comments.createdAt,
+              })
+              .from(comments)
+              .where(
+                and(
+                  inArray(comments.postId, postIds),
+                  eq(comments.owner, userId),
+                  eq(comments.isReply, false)
+                )
+              )
+              .orderBy(desc(comments.createdAt)),
+      ]);
+
+    return { following, followers, bids: userBids, ratings: userRatings, comments: userComments };
+  }
+
+  async getStoreIdsForOwners(ownerIds: string[]) {
+    if (ownerIds.length === 0) return [];
+    return db
+      .select({ _id: createStore._id, ownerId: createStore.ownerId })
+      .from(createStore)
+      .where(inArray(createStore.ownerId, ownerIds));
+  }
+
+  async findCursorByInCategoryId(inCategoryId: string) {
+    const [row] = await db
+      .select({
+        createdAt: posts.createdAt,
+        averageRating: posts.averageRating,
+        totalViews: posts.totalViews,
+        inCategoryId: posts.inCategoryId,
+      })
+      .from(posts)
+      .where(eq(posts.inCategoryId, inCategoryId))
+      .limit(1);
+    return row ?? null;
+  }
+
   async updateById(postId: string, patch: Partial<NewPost>) {
     const [row] = await db
       .update(posts)
@@ -123,6 +301,9 @@ export class PostRepository {
     videosOnly?: boolean;
     imagesOnly?: boolean;
     isOwnerRequest?: boolean;
+    includeCount?: boolean;
+    page?: number;
+    postIdsFilter?: number[];
   }) {
     const limitNumber = Math.min(Math.max(params.limit || 20, 1), 100);
 
@@ -137,8 +318,9 @@ export class PostRepository {
       whereParts.push(or(ilike(posts.title, q), ilike(posts.description, q)));
     }
 
-    if (params.category && params.category.trim()) {
-      whereParts.push(eq(posts.category, params.category.trim()));
+    const category = params.category?.trim();
+    if (category && category !== "All") {
+      whereParts.push(eq(posts.category, category));
     }
 
     if (params.userIdFilter) {
@@ -162,6 +344,16 @@ export class PostRepository {
     if (params.imagesOnly) {
       whereParts.push(sql`${posts.imagecount} > 0 and ${posts.videocount} = 0`);
     }
+
+    if (params.postIdsFilter) {
+      whereParts.push(
+        params.postIdsFilter.length
+          ? inArray(posts._id, params.postIdsFilter)
+          : sql`false`
+      );
+    }
+
+    const countWhereParts = [...whereParts];
 
     // Ã¢Å“â€¦ Fixed cursor parsing
     let cursorSortValue: string | null = null;
@@ -276,25 +468,36 @@ export class PostRepository {
       orderBys.push(order(posts.inCategoryId));
     }
 
-    const rows = await db
-      .select({
-        post: posts,
-        owner: {
-          _id: users._id,
-          username: users.username,
-          fullName: users.fullName,
-          avatar: users.avatar,
-          email: users.email,
-        },
-      })
-      .from(posts)
-      .leftJoin(users, eq(posts.owner, users._id))
-      .where(whereParts.length ? and(...whereParts) : undefined)
-      .orderBy(...orderBys)
-      .limit(limitNumber + 1);
+    const [rows, totalCount] = await Promise.all([
+      db
+        .select({
+          post: posts,
+          owner: {
+            _id: users._id,
+            username: users.username,
+            fullName: users.fullName,
+            avatar: users.avatar,
+            email: users.email,
+          },
+        })
+        .from(posts)
+        .leftJoin(users, eq(posts.owner, users._id))
+        .where(whereParts.length ? and(...whereParts) : undefined)
+        .orderBy(...orderBys)
+        .offset(params.page ? (params.page - 1) * limitNumber : 0)
+        .limit(limitNumber + 1),
+      params.includeCount
+        ? db
+            .select({ totalCount: count() })
+            .from(posts)
+            .where(countWhereParts.length ? and(...countWhereParts) : undefined)
+            .then(([row]) => row?.totalCount ?? 0)
+        : Promise.resolve(null),
+    ]);
 
     return {
       rows,
+      totalCount,
       limit: limitNumber,
       sortBy: finalSortBy,
       sortType: finalSortType,
@@ -579,4 +782,3 @@ export const postRepository = new PostRepository();
 // }
 
 // export const postRepository = new PostRepository();
-

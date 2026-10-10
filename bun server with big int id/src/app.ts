@@ -7,6 +7,7 @@ import { swagger } from "@elysiajs/swagger";
 // Routes import
 import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
+import followListRoutes from "./routes/followlist.routes";
 import storeRoutes from "./routes/store/createstore.routes";
 import storeCarouselRoutes from "./routes/store/store_carousel.routes";
 import { ApiResponse } from "./utils/ApiResponse"; // ✅ Import ApiResponse
@@ -24,6 +25,7 @@ import categoryRoutes from "./routes/categoury.routes";
 import notificationRoutes from "./routes/notification.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
 import videoModerationRoutes from "./routes/videoModeration.routes";
+import bannerRoutes from "./routes/banner.routes";
 import storeNotificationRoutes from "./routes/store/store_get_Notification.routes";
 import { createBullBoardRoutes } from "./config/bullBoard";
 import { flags } from "./config/flags";
@@ -127,6 +129,7 @@ const app = new Elysia()
         tags: [
           { name: "Auth", description: "Authentication endpoints" },
           { name: "Users", description: "User management endpoints" },
+          { name: "Banners", description: "Standalone banner endpoints" },
         ],
       },
     })
@@ -148,6 +151,7 @@ const app = new Elysia()
   // ─── Mount Routes (replaces: app.use('/api/v1/users', userRouter)) ─
   .use(authRoutes)    // /api/v1/users/... (auth related)
   .use(userRoutes)
+  .use(followListRoutes)
   .use(storeRoutes)
   .use(oldStoreCarouselRoutes)
   .use(storeCarouselRoutes)
@@ -165,6 +169,7 @@ const app = new Elysia()
   .use(notificationRoutes)
   .use(subscriptionRoutes)
   .use(videoModerationRoutes)
+  .use(bannerRoutes)
   .use(createBullBoardRoutes(bullBoardQueues))
   .use(qstashRoutes)
   // ✅ Add this!

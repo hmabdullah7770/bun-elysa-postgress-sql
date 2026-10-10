@@ -43,6 +43,32 @@ export class CommentRepository {
   return rows[0];
 }
 
+  async countByPost(postId: number, isReply?: boolean) {
+    const rows = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(comments)
+      .where(
+        and(
+          eq(comments.postId, postId),
+          ...(isReply === undefined ? [] : [eq(comments.isReply, isReply)])
+        )
+      );
+    return Number(rows[0]?.count ?? 0);
+  }
+
+  async countReplies(parentComment: number) {
+    const rows = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(comments)
+      .where(
+        and(
+          eq(comments.parentComment, parentComment),
+          eq(comments.isReply, true)
+        )
+      );
+    return Number(rows[0]?.count ?? 0);
+  }
+
 
   async create(values: {
     _id: number;
@@ -169,14 +195,57 @@ export class CommentRepository {
       .limit(params.limit);
   }
 
-  async findByInCommentId(inCommentId: string) {
-    // inCommentId comes from frontend as string; compare via bigint cast
+  async findCommentCursor(postId: number, inCommentId: string) {
     const rows = await db
       .select({ createdAt: comments.createdAt })
       .from(comments)
-      .where(sql`${comments.inCommentId} = ${inCommentId}::bigint`)
+      .where(
+        and(
+          eq(comments.postId, postId),
+          eq(comments.isReply, false),
+          sql`${comments.inCommentId} = ${inCommentId}::bigint`
+        )
+      )
       .limit(1);
     return rows[0] as { createdAt: Date } | undefined;
+  }
+
+  async findReplyCursor(parentComment: number, inCommentId: string) {
+    const rows = await db
+      .select({ createdAt: comments.createdAt })
+      .from(comments)
+      .where(
+        and(
+          eq(comments.parentComment, parentComment),
+          eq(comments.isReply, true),
+          sql`${comments.inCommentId} = ${inCommentId}::bigint`
+        )
+      )
+      .limit(1);
+    return rows[0] as { createdAt: Date } | undefined;
+  }
+
+  async findSearchCursor(
+    postId: number,
+    inCommentId: string,
+    includeReplies: boolean
+  ) {
+    const rows = await db
+      .select({
+        _id: comments._id,
+        createdAt: comments.createdAt,
+        numberOfLikes: comments.numberOfLikes,
+      })
+      .from(comments)
+      .where(
+        and(
+          eq(comments.postId, postId),
+          ...(includeReplies ? [] : [eq(comments.isReply, false)]),
+          sql`${comments.inCommentId} = ${inCommentId}::bigint`
+        )
+      )
+      .limit(1);
+    return rows[0];
   }
 
   async getReplyCounts(parentIds: number[]) {
@@ -235,6 +304,23 @@ export class CommentRepository {
       .limit(params.limit);
   }
 
+  async listRepliesForPost(postId: number) {
+    return db
+      .select({
+        comment: comments,
+        owner: {
+          _id: users._id,
+          username: users.username,
+          fullName: users.fullName,
+          avatar: users.avatar,
+        },
+      })
+      .from(comments)
+      .leftJoin(users, eq(comments.owner, users._id))
+      .where(and(eq(comments.postId, postId), eq(comments.isReply, true)))
+      .orderBy(desc(comments.createdAt));
+  }
+
   async search(params: {
     postId: number;
     searchTerm: string;
@@ -248,6 +334,11 @@ export class CommentRepository {
     dateFrom?: Date | null;
     dateTo?: Date | null;
     sortBy: "relevance" | "likes" | "recent";
+    cursor?: {
+      _id: number;
+      createdAt: Date;
+      numberOfLikes: number;
+    };
   }) {
     const term = params.searchTerm.trim();
     const likeTerm = params.caseSensitive ? `%${term}%` : `%${term.toLowerCase()}%`;
@@ -275,30 +366,57 @@ export class CommentRepository {
 
     const orderBy =
       params.sortBy === "likes"
-        ? desc(comments.numberOfLikes)
+        ? [desc(comments.numberOfLikes), desc(comments._id)]
         : params.sortBy === "recent"
-        ? desc(comments.createdAt)
-        : desc(comments.createdAt);
+        ? [desc(comments.createdAt), desc(comments._id)]
+        : [desc(comments.createdAt), desc(comments._id)];
 
-    const rows = await db
-      .select({
-        comment: comments,
-        owner: {
-          _id: users._id,
-          username: users.username,
-          fullName: users.fullName,
-          avatar: users.avatar,
-        },
-      })
-      .from(comments)
-      .leftJoin(users, eq(comments.owner, users._id))
-      .where(and(...(searchWhere as any)))
-      .orderBy(orderBy as any)
-      .limit(params.limit);
+    const cursorCondition = params.cursor
+      ? params.sortBy === "likes"
+        ? or(
+            lt(comments.numberOfLikes, params.cursor.numberOfLikes),
+            and(
+              eq(comments.numberOfLikes, params.cursor.numberOfLikes),
+              lt(comments._id, params.cursor._id)
+            )
+          )
+        : or(
+            lt(comments.createdAt, params.cursor.createdAt),
+            and(
+              eq(comments.createdAt, params.cursor.createdAt),
+              lt(comments._id, params.cursor._id)
+            )
+          )
+      : undefined;
+    const pageWhere = cursorCondition
+      ? [...searchWhere, cursorCondition]
+      : searchWhere;
 
-    return rows as any[];
+    const [rows, countRows] = await Promise.all([
+      db
+        .select({
+          comment: comments,
+          owner: {
+            _id: users._id,
+            username: users.username,
+            fullName: users.fullName,
+            avatar: users.avatar,
+          },
+        })
+        .from(comments)
+        .leftJoin(users, eq(comments.owner, users._id))
+        .where(and(...(pageWhere as any)))
+        .orderBy(orderBy as any)
+        .limit(params.limit),
+      db
+        .select({ count: sql<number>`count(*)::int` })
+        .from(comments)
+        .leftJoin(users, eq(comments.owner, users._id))
+        .where(and(...(searchWhere as any))),
+    ]);
+
+    return { rows: rows as any[], total: Number(countRows[0]?.count ?? 0) };
   }
 }
 
 export const commentRepository = new CommentRepository();
-

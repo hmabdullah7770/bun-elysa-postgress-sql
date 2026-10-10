@@ -2,6 +2,12 @@
 import { ApiError } from "../utils/ApiError";
 import { userRepository } from "../repository/user.repository";
 import { uploadResult, saveTempFile } from "../utils/cloudinary";
+import { flags } from "../config/flags";
+import {
+  QUEUE_NAMES,
+  addNotificationJob,
+} from "../MQ/Qstash/dispatcher/notification.dispatcher";
+import { createNotification } from "./notification.service";
 
 export class UserService {
   // â”€â”€â”€ Get Current User (with follow counts) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -18,10 +24,34 @@ export class UserService {
 
   // â”€â”€â”€ Get User By ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-  async getUserById(id: string) {
-    const user = await userRepository.findByIdSafe(id);
+  async getUserById(id: string, viewer: { _id: string; username: string }) {
+    const user = await userRepository.findByIdWithFollowStatus(id, viewer._id);
     if (!user) throw new ApiError(404, "User not found");
-    return user;
+
+    const stores = await userRepository.getUserStores(id);
+
+    if (flags.paidUser) {
+      void addNotificationJob(QUEUE_NAMES.PROFILEVISIT, "profilevisit", {
+        userId: user._id,
+        title: "Profile Notification!",
+        body: `${viewer.username} visited Your profile.`,
+      }).catch((error) =>
+        console.error("Profile notification failed:", error)
+      );
+
+      void createNotification({
+        recipient: user._id,
+        sender: viewer._id,
+        type: "Profile",
+        title: "Someone visited your profile",
+        body: `${viewer.username} visit  your profile.`,
+        metadata: { userId: viewer._id },
+      }).catch((error) =>
+        console.error("Profile visit notification store failed:", error)
+      );
+    }
+
+    return { ...user, stores };
   }
 
   // â”€â”€â”€ Get User Without Following Info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -152,10 +182,12 @@ export class UserService {
 
     if (Object.keys(updateData).length === 0) {
       const user = await userRepository.findByIdSafe(userId);
+      if (!user) throw new ApiError(404, "User not found");
       return user;
     }
 
     const updatedUser = await userRepository.updateById(userId, updateData);
+    if (!updatedUser) throw new ApiError(404, "User not found");
     return updatedUser;
   }
 
